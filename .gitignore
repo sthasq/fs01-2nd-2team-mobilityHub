@@ -1,0 +1,53 @@
+########################
+# OS / 공통
+########################
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+########################
+# IntelliJ IDEA
+########################
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# 만약 backend만 따로 IntelliJ로 열었을 때를 대비
+backend/.idea/
+backend/*.iml
+
+########################
+# VS Code
+########################
+.vscode/
+frontend/.vscode/
+raspi/.vscode/
+
+########################
+# Java / Gradle (backend)
+########################
+backend/.gradle/
+backend/build/
+backend/out/
+
+########################
+# Node / React (frontend)
+########################
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+########################
+# Python / Raspi
+########################
+raspi/__pycache__/
+raspi/*.pyc
+raspi/.venv/
+raspi/venv/
+
+########################
+# 기타
+########################
+.gitignore~
