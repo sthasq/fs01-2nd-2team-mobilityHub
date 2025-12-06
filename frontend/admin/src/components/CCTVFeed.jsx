@@ -1,23 +1,25 @@
+// 필요한 아이콘과 훅을 불러옵니다.
 import { Video } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useEffect, useState } from "react";
 
-// 이미지 url이 아니라 라즈베리파이 카메라 연동 필요
-
+// 컴포넌트는 cameraId, title, imageUrl을 props로 받습니다.
+// TS 인터페이스는 제거하여 JSX 형태로 맞춰줍니다.
 export function CCTVFeed({ cameraId, title, imageUrl }) {
+  // 현재 시간을 저장하는 상태입니다.
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // 1초마다 타임 갱신
+  // 1초마다 시간을 갱신하는 타이머입니다.
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
-    // 컴포넌트가 언마운트될 때 타이머 정리
+    // 컴포넌트가 언마운트될 때 타이머를 정리합니다.
     return () => clearInterval(timer);
   }, []);
 
-  // 화면에 표시할 시간 문자열
+  // 화면에 표시할 시간 문자열입니다.
   const timeString = currentTime.toLocaleTimeString("ko-KR", {
     hour: "2-digit",
     minute: "2-digit",
@@ -28,7 +30,7 @@ export function CCTVFeed({ cameraId, title, imageUrl }) {
     <div className="bg-gray-900 rounded-lg overflow-hidden">
       {/* 영상 영역 비율을 유지하도록 aspect-video 사용 */}
       <div className="relative aspect-video">
-        {/* 이미지가 있으면 표시하고, 없으면 Video 아이콘 출력 */}
+        {/* 이미지가 있으면 표시하고, 없으면 Video 아이콘을 출력합니다. */}
         {imageUrl ? (
           <ImageWithFallback
             src={imageUrl}

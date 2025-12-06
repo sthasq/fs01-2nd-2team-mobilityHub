@@ -3,6 +3,12 @@ import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { MainSection } from "./components/MainSection";
 import { ParkingSection } from "./components/ParkingSection";
+import { ProfileSection } from "./components/ProfileSection";
+import EntranceExitSection from "./components/EntranceExitSection";
+import { CarWashSection } from "./components/CarWashSection";
+import { MaintenanceSection } from "./components/MaintenanceSection";
+import AdminSection from "./components/AdminSection";
+import { StatisticsSection } from "./components/StatisticsSection";
 
 export default function App() {
   // 현재 표시할 섹션
@@ -14,8 +20,20 @@ export default function App() {
     switch (activeSection) {
       case "main":
         return <MainSection />;
+      case "entrance":
+        return <EntranceExitSection />;
+      case "carwash":
+        return <CarWashSection />;
+      case "maintenance":
+        return <MaintenanceSection />;
       case "parking":
         return <ParkingSection />;
+      case "profile":
+        return <ProfileSection />;
+      case "statistics":
+        return <StatisticsSection />;
+      case "admin":
+        return <AdminSection />;
       default:
         return <MainSection />;
     }
