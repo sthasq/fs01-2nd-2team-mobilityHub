@@ -1,6 +1,6 @@
 // 센서 로그 - 모든 사용중인 센서에 대한 로그
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.log.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

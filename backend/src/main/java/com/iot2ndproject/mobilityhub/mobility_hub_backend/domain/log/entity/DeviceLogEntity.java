@@ -1,6 +1,6 @@
 // 디바이스 로그 - 라즈베리파이 부팅&통신&업데이트 등 관련된 로그
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.log.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

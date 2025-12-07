@@ -1,6 +1,6 @@
 // 통계 테이블
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.statistics.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

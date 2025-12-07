@@ -1,12 +1,16 @@
 // 작업 테이블
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.work.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.image.entity.ImageEntity;
+import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.parking.entity.ParkingLotEntity;
+import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.vehicle.entity.CarEntity;
 
 import java.time.LocalDateTime;
 

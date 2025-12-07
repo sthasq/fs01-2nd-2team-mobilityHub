@@ -1,6 +1,6 @@
 // 주차장 테이블
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.parking.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.admin.entity.AdminEntity;
+import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.stock.entity.StockStatusEntity;
 
 @Entity
 @Table(name = "parkingLot")

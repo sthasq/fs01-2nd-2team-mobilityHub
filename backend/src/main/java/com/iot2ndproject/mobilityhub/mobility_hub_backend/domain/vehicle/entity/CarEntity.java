@@ -1,12 +1,14 @@
 // 차정보 테이블
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.vehicle.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.user.entity.UserEntity;
 
 import java.time.LocalDateTime;
 

@@ -1,6 +1,6 @@
 // 작업정보 테이블
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.work.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

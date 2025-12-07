@@ -1,6 +1,6 @@
 // 에러관련 로그
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.log.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

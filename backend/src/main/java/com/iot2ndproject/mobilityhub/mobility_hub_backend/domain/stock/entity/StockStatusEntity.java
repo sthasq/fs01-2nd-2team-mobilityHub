@@ -1,12 +1,14 @@
 // 재고현황 테이블
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.stock.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.parking.entity.ParkingLotEntity;
 
 import java.time.LocalDateTime;
 

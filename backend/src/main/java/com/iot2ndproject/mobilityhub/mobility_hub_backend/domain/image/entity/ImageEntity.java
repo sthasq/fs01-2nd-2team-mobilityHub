@@ -1,6 +1,6 @@
 // 이미지 테이블
 
-package com.iot2ndproject.mobilityhub.mobility_hub_backend.Entity;
+package com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.image.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
