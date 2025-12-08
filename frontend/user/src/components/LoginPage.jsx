@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import "../styles/LoginPage.css";
 
 export default function LoginPage({ onLogin }) {
   const [isSignup, setIsSignup] = useState(false);
@@ -35,7 +36,7 @@ export default function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="sign-button">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-center">{isSignup ? "회원가입" : "로그인"}</CardTitle>
