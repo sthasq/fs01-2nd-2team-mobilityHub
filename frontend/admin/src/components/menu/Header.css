@@ -1,0 +1,18 @@
+header {
+  background-color: white;
+  border-bottom-width: 1px;
+  border-bottom-style: solid #e5e7eb;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.header-menu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-title {
+  font-size: 20px;
+  background-color: green;
+}

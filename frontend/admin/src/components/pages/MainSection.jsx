@@ -1,0 +1,88 @@
+import React from "react";
+import "./MainSection.css";
+
+const MainSection = () => {
+  return (
+    <div className="main-page">
+      {/* 통계 차트 영역 */}
+      <div className="statistics-chart">
+        <div className="chart-box">
+          <div className="chart-title">
+            <h3>금일 집계 (시간대별 입출차)</h3>
+          </div>
+          <div className="chart-content">(시간대별 입출차 데이터를 선 그래프로 해주세요)</div>
+        </div>
+        <div className="chart-box">
+          <div className="chart-title">
+            <h3>금일 이용회원 (구역별)</h3>
+          </div>
+          <div className="chart-content">(구역별 이용회원 데이터를 막대 그래프로 해주세요)</div>
+        </div>
+      </div>
+
+      {/* 현재 주차 차량 목록과 시스템 정보 */}
+      <div className="info-content">
+        {/* 주차 목록 제목 */}
+        <div className="parkingcar-list">
+          <div className="list-title">
+            <div className="title-content">
+              <h3 id="title">현재 주차장 차량 목록</h3>
+              <span id="car-count">총 (변환필요)대 주차중</span>
+            </div>
+          </div>
+          {/* 주차 목록 테이블 */}
+          <div className="parkingcar-table">
+            <table>
+              <thead>
+                <tr key="1">
+                  <th>차량번호</th>
+                  <th>주차 위치</th>
+                  <th>입차 시간</th>
+                  <th>주차 시간</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr key="2" className="table-content">
+                  <td>차량번호</td>
+                  <td>(주차칸)번 주차면</td>
+                  <td>입차시간</td>
+                  <td>주차시간</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 날씨 관련 시스템 */}
+        <div className="weather-info">
+          {/* 날짜와 날씨 */}
+          <div>
+            <p id="today">오늘 날짜</p>
+            <p id="day">날짜(변환필요)</p>
+            <div className="weather-box">
+              <span className="weather-icon">날씨 아이콘</span>
+              <span className="weather-text">날씨(변환필요)</span>
+            </div>
+          </div>
+
+          {/* 물 수위 센서 */}
+          <div className="water">
+            <p className="water-title">물 수위 센서 시스템</p>
+            <div className="system-box">
+              <div className="system-content">
+                <div className="switch"></div>
+                <span className="state">on/off 표시</span>
+              </div>
+              <div className="system-icon">아이콘 표시</div>
+            </div>
+            <p className="systtem-info">
+              (날씨에 따른 변화 필요) 비가 내리고 있어 센서가 활성화되었습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MainSection;
