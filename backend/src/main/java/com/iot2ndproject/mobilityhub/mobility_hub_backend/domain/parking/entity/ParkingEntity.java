@@ -7,18 +7,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.admin.entity.AdminEntity;
 import com.iot2ndproject.mobilityhub.mobility_hub_backend.domain.stock.entity.StockStatusEntity;
 
 @Entity
-@Table(name = "parkingLot")
+@Table(name = "parking")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ParkingLotEntity {
+public class ParkingEntity {
     @Id
     @Column(columnDefinition = "CHAR(3)")
     private String sectorId; // 섹터 ID
@@ -32,6 +31,4 @@ public class ParkingLotEntity {
     @JoinColumn(name = "adminId")
     private AdminEntity admin; // 관리자ID(fk)
 
-    @OneToMany(mappedBy = "parkingLot")
-    List<StockStatusEntity> stockStatus = new ArrayList<>();
 }
