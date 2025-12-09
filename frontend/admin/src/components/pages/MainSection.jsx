@@ -1,7 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../style/MainSection.css";
+import { getWeatherInfo } from "../../api/weather";
+import { useLocation } from "react-router-dom";
 
 const MainSection = () => {
+  //날씨
+  const [weather, setWeather] = useState("");
+
+  // 현재 날짜 가져오기
+  const currentDate = new Date().toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+  });
+
+  // 날씨 API
+  useEffect(() => {
+    getWeatherInfo()
+      .then((todayWeather) => {
+        setWeather(todayWeather);
+      })
+      .catch((err) => console.error("API 오류:", err));
+  });
+
   return (
     <div className="main-page">
       {/* 통계 차트 영역 */}
@@ -58,10 +80,12 @@ const MainSection = () => {
           {/* 날짜와 날씨 */}
           <div>
             <p id="today">오늘 날짜</p>
-            <p id="day">날짜(변환필요)</p>
+            <p id="day">{currentDate}</p>
             <div className="weather-box">
-              <span className="weather-icon">날씨 아이콘</span>
-              <span className="weather-text">날씨(변환필요)</span>
+              <span className="weather-icon" style={{ backgroundColor: "green" }}>
+                날씨 아이콘
+              </span>
+              <span className="weather-text">{weather}</span>
             </div>
           </div>
 

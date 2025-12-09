@@ -6,6 +6,13 @@ import SideMenu from "./components/menu/SideMenu";
 import Header from "./components/menu/Header";
 import { Route, Routes } from "react-router-dom";
 import MainSection from "./components/pages/MainSection";
+import EntranceExitSection from "./components/pages/EntranceExitSection";
+import StatisticsSection from "./components/pages/StatisticsSection";
+import CarWashSection from "./components/pages/CarWashSection";
+import LicenseModal from "./components/pages/LicenseModal";
+import MaintenanceSection from "./components/pages/MaintenanceSection";
+import AdminSection from "./components/pages/AdminSection";
+import ParkingSection from "./components/pages/ParkingSection";
 
 function App() {
   return (
@@ -19,7 +26,14 @@ function App() {
               <Route path="/" element={<MainSection />} />
             </Routes>
             <Routes>
+              <Route path="/entrance" element={<EntranceExitSection />} />
               <Route path="/main" element={<MainSection />} />
+              <Route path="/statistics" element={<StatisticsSection />} />
+              <Route path="/carwash" element={<CarWashSection />} />
+              <Route path="/statistics" element={<LicenseModal />} />
+              <Route path="/admin" element={<AdminSection />} />
+              <Route path="/maintenance" element={<MaintenanceSection />} />
+              <Route path="/parking" element={<ParkingSection />} />
             </Routes>
           </main>
         </div>
