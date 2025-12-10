@@ -9,36 +9,41 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.integration.annotation.Default;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "userInfo")
+@Table
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity {
     @Id
-    private String userId; // 유저아이디
+    private String username; // 유저아이디
 
     @Column(nullable = false)
-    private String userPassword; // 패스워드
+    private String password; // 패스워드
 
     @Column(nullable = false)
-    private String userName; // 유저이름
+    private String name; // 이름
 
     @Column(nullable = false)
-    private String phoneNumber; // 휴대폰번호
+    private String tel; // 휴대폰번호
 
     @CreationTimestamp
     private LocalDateTime createDate; // 가입날짜
 
+    @Column
+    private String role;
     // 회원가입시
-    public UserEntity(String userId, String userPassword, String userName, String phoneNumber) {
-        this.userId = userId;
-        this.userPassword = userPassword;
-        this.userName = userName;
-        this.phoneNumber = phoneNumber;
+    public UserEntity(String username, String password, String name, String tel, String role) {
+        this.username = username;
+        this.password = password;
+        this.name = name;
+        this.tel = tel;
+        this.role = role;
     }
 }
