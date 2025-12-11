@@ -46,7 +46,8 @@ public class JWTSecurityConfig {
                         .requestMatchers("/user/create","/user/login", "/carwash/list", "/api/entry/ocr").permitAll()
 //                        .requestMatchers("/customer/create").hasAnyRole("ADMIN")
 //                        .requestMatchers("product/**").hasAnyRole("USER","ADMIN")
-                        .anyRequest().authenticated())
+                        //.anyRequest().authenticated())
+                .anyRequest().permitAll())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
@@ -74,7 +75,7 @@ public class JWTSecurityConfig {
 
         //cors정책에 대한 세팅 값을 추가
         corsConfigurationSource.addAllowedOrigin("http://localhost:5173");
-
+        corsConfigurationSource.addAllowedOrigin("http://localhost:3000");
         //허용할 http의 method
         corsConfigurationSource.addAllowedMethod("*"); //GET, POST, PUT, DELETE ... 등 모두 허용
         //허용할 헤더 설정 - 모든 헤더 허용
