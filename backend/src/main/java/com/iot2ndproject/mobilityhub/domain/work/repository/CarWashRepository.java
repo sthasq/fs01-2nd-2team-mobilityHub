@@ -9,4 +9,5 @@ public interface CarWashRepository extends JpaRepository<WorkInfoEntity, Long> {
     
     // workId로 조회하기
     List<WorkInfoEntity> findByWork_WorkId(int workId);
+
 }
