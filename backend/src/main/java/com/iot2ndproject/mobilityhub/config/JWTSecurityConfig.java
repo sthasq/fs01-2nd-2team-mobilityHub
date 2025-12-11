@@ -46,7 +46,7 @@ public class JWTSecurityConfig {
                         .requestMatchers("/user/create","/user/login").permitAll()
 //                        .requestMatchers("/customer/create").hasAnyRole("ADMIN")
 //                        .requestMatchers("product/**").hasAnyRole("USER","ADMIN")
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

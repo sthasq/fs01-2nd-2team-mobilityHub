@@ -1,5 +1,6 @@
 package com.iot2ndproject.mobilityhub.domain.user.dto;
 
+import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,4 +23,5 @@ public class UserResponseDTO {
     private String userName; // 유저이름
     private String tel; // 휴대폰번호
     private String role;
+    private List<UserCarEntity> userCars;
 }

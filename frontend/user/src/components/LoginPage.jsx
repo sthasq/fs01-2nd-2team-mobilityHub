@@ -46,6 +46,9 @@ export default function LoginPage({ isLogin }) {
           if (data && data.accessToken) {
             console.log("인증성공");
             localStorage.setItem("accessToken", data.accessToken);
+            localStorage.setItem("userId", data.userId);
+            localStorage.setItem("role", data.roles);
+            localStorage.setItem("cars", data.cars);
             navigate("/main");
           }
         })

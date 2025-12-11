@@ -1,9 +1,10 @@
 import { Car, History, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
-export default function MainMenu({ userId, isLogin, onLogout }) {
+import { useEffect, useState } from "react";
+export default function MainMenu({ isLogin, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [userId, setUserId] = useState("");
   useEffect(() => {
     if (!isLogin()) {
       navigate("/login");
@@ -13,13 +14,19 @@ export default function MainMenu({ userId, isLogin, onLogout }) {
   const getClassName = (path) => {
     return location.pathname === path ? "menu-item active" : "menu-item";
   };
-
+  // userId 가져오기
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
       <div className="bg-white shadow-sm p-4 flex items-center justify-between">
         <div>
-          <div className="text-sm text-gray-500">로그인 사용자</div>
+          <div className="text-sm text-gray-500">{userId}</div>
           <div>{userId}</div>
         </div>
         <button
@@ -40,7 +47,7 @@ export default function MainMenu({ userId, isLogin, onLogout }) {
         {/* 서비스 카드 */}
         <div
           className="cursor-pointer bg-white shadow-sm rounded-lg hover:shadow-md transition p-4 flex items-center gap-4"
-          onClick={() => navigate("/service")}
+          onClick={() => navigate("/select")}
         >
           <div className="bg-blue-100 p-3 rounded-lg">
             <Car className="w-6 h-6 text-blue-600" />

@@ -11,6 +11,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.iot2ndproject.mobilityhub.domain.user.entity.UserEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "car")
@@ -18,23 +20,23 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CarEntity {
+    public CarEntity(String carNumber) {
+        this.carNumber = carNumber;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long carId; // 차 ID
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "userId")
-    private UserEntity user;
-
     @Column(nullable = false)
     private String carNumber; // 차번호
+
+    @Column
+    private String carModel;
     
     @CreationTimestamp
     private LocalDateTime insertDate; // 차 등록날짜
 
-    // 차정보 추가할때
-    public CarEntity(UserEntity user, String carNumber){
-        this.user = user;
-        this.carNumber = carNumber;
-    }
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    private List<UserCarEntity> userCars = new ArrayList<>();
 }

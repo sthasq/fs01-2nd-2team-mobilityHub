@@ -2,9 +2,11 @@
 
 package com.iot2ndproject.mobilityhub.domain.user.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +15,11 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.integration.annotation.Default;
 
+import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -38,6 +44,9 @@ public class UserEntity {
 
     @Column
     private String role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserCarEntity> userCars = new ArrayList<>();
     // 회원가입시
     public UserEntity(String userId, String password, String userName, String tel, String role) {
         this.userId = userId;

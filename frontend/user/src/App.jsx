@@ -4,6 +4,7 @@ import { ServiceProgress } from "./components/ServiceProgress";
 import { UsageHistory } from "./components/UsageHistory";
 import { ProfileEdit } from "./components/ProfileEdit";
 import LoginPage from "./components/LoginPage";
+import VehicleSelection from "./components/VehicleSelection";
 function App() {
   const navigate = useNavigate();
   const isLogin = () => {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/history" element={<UsageHistory isLogin={isLogin} />} />
         <Route path="/profile" element={<ProfileEdit isLogin={isLogin} />} />
         <Route path="/login" element={<LoginPage isLogin={isLogin} />} />
+        <Route path="/select" element={<VehicleSelection isLogin={isLogin} />} />
       </Routes>
     </>
   );

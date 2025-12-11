@@ -5,6 +5,8 @@ import com.iot2ndproject.mobilityhub.domain.user.dto.UserRequestDTO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.user.jwt.TokenProvider;
 import com.iot2ndproject.mobilityhub.domain.user.service.UserService;
+import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
+import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
@@ -56,7 +59,11 @@ public class UserController {
                 .body(Map.of(
                         "accessToken",jwtToken,
                         "userId",responseDTO.getUserId(),
-                        "roles",responseDTO.getRole()
+                        "roles",responseDTO.getRole(),
+                        "cars",responseDTO.getUserCars().stream()
+                                        .map(UserCarEntity::getCar)
+                                        .map(CarEntity::getCarNumber)
+                                .collect(Collectors.joining(", "))
                 ));
     }
 }
