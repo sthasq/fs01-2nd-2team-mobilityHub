@@ -1,4 +1,4 @@
-package com.example.springshop.mqtt;
+package com.iot2ndproject.mobilityhub.domain.mqtt;
 
 import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.mqtt.support.MqttHeaders;

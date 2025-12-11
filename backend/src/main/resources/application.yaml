@@ -11,7 +11,16 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/mobilityhub?serverTimezone=Asia/Seoul
     username: sample
     password: 1234
+  mqtt:
+    url: tcp://localhost:1883    # 브로커 주소
+    #    username: myUser             # (선택) 계정
+    #    password: myPassword         # (선택) 비밀번호
+    client-id: spring-boot-app   # 기본 클라이언트 ID
 
+    # 토픽 설정
+    topic:
+      command: server/command   # 발행(Publish)할 토픽
+      sensor: heaves/home/web/sensor/dht11        # 구독(Subscribe)할 토픽
 
 
   jpa:
@@ -29,3 +38,5 @@ jwt:
   header: Authorization
   secret: c3ByaW5nc2VjdXJpdHktand0LXJlYWN0LXRlc3QtbXF0dC1yYXNwYmVycnlwaQ==
   token-valid-in-second: 3600000
+
+

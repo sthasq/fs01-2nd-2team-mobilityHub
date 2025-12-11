@@ -1,4 +1,4 @@
-package com.example.springshop.config;
+package com.iot2ndproject.mobilityhub.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

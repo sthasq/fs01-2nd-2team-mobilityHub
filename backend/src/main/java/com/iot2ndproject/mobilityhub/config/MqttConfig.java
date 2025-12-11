@@ -1,4 +1,4 @@
-package com.example.springshop.config;
+package com.iot2ndproject.mobilityhub.config;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;

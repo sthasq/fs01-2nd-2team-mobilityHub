@@ -1,11 +1,8 @@
-package com.example.springshop.mqtt;
+package com.iot2ndproject.mobilityhub.domain.mqtt;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.mqtt.support.MqttHeaders;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.messaging.Message;
 
