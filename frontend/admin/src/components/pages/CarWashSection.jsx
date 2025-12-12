@@ -2,10 +2,17 @@ import React, { useEffect, useState } from "react";
 import "../style/CarWashSection.css";
 import { getCarWashing } from "../../api/carWashAPI";
 import { Clock, Droplets, CheckCircle } from "lucide-react";
+import CarWashBarChart from "../chart/CarWashBarChart";
 
 const CarWashSection = () => {
   // 세차장 데이터 목록
   const [carWashing, setCarWashing] = useState([]);
+
+  const currentDate = new Date().toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   useEffect(() => {
     getCarWashing()
@@ -109,10 +116,10 @@ const CarWashSection = () => {
       {/* 하루 이용량 통계 그래프 */}
       <div className="graph-component">
         <div className="graph-title">
-          <h3 className="title">하루 이용량 통계</h3>
+          <h3 className="title">하루 이용량 통계 ({currentDate} 기준)</h3>
         </div>
 
-        <div className="graph">막대 그래프 추가해주세요.</div>
+        <CarWashBarChart className="graph" carWashValues={carWashing} />
       </div>
     </div>
   );
