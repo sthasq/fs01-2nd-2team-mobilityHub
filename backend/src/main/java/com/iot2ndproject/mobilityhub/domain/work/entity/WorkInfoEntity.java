@@ -11,7 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
-
+import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,8 +25,8 @@ public class WorkInfoEntity {
     private Long id; // 자동생성용 ID, 추후에 삭제해도 됌
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "carId")
-    private CarEntity car; // 차 ID
+    @JoinColumn(name = "id")
+    private UserCarEntity userCar; // 유저-차 ID
 
     @CreationTimestamp
     private LocalDateTime requestTime; // 사용자 요청시간(컬럼생성시 자동생성)
