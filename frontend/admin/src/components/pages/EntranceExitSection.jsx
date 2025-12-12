@@ -1,7 +1,7 @@
 import "../style/EntranceExitSection.css";
 import { useState, useEffect } from "react";
 import LicenseModal from "./LicenseModal.jsx";
-import { getTodayEntry, getTodayExit } from "../api/Entrance";
+import { getTodayEntry, getTodayExit } from "../../api/EntranceAPI.js";
 
 export default function EntranceExitSection() {
   const [modalData, setModalData] = useState(null);
