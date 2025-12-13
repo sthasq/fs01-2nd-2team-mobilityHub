@@ -138,7 +138,7 @@ CREATE TABLE `parking_map_node` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `parking_map_edge` (
-  `edge_id` bigint NOT NULL AUTO_INCREMENT,
+  `edge_id` int NOT NULL AUTO_INCREMENT,
   `from_node_id` int NOT NULL,
   `to_node_id` int NOT NULL,
   `direction` varchar(255) NOT NULL,

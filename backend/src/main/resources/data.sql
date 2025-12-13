@@ -238,9 +238,9 @@ INSERT INTO `parking_map_node` (`node_id`, `node_name`) VALUES
   (18, '기점_11'),
   (19, '기점_12'),
   (20, '출구'),
-  (21, NULL),
-  (22, NULL),
-  (23, NULL)
+  (21, '기점_13'),
+  (22, '기점_14'),
+  (23, '기점_15')
 ON DUPLICATE KEY UPDATE `node_name` = VALUES(`node_name`);
 
 INSERT IGNORE INTO `parking_map_edge` (`from_node_id`, `to_node_id`, `direction`) VALUES
