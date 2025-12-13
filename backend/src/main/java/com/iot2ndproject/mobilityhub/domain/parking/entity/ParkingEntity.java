@@ -2,6 +2,7 @@
 
 package com.iot2ndproject.mobilityhub.domain.parking.entity;
 
+import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
-import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
+
+
+
 
 
 @Entity
