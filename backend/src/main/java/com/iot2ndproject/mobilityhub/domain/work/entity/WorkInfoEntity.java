@@ -10,7 +10,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 
 import java.time.LocalDateTime;
@@ -28,9 +27,6 @@ public class WorkInfoEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_car_id")
     private UserCarEntity userCar; // 유저-차 ID
-
-    @Column
-    private String requestGroupId; // 동일 요청(복수 서비스)을 묶는 그룹 ID
 
     @CreationTimestamp
     private LocalDateTime requestTime; // 사용자 요청시간(컬럼생성시 자동생성)

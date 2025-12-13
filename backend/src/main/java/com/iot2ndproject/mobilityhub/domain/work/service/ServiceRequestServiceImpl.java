@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,8 +45,6 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
                 .findByUser_UserIdAndCar_CarNumber(dto.getUserId(), dto.getCarNumber())
                 .orElseThrow(() -> new IllegalArgumentException("UserCar not found for userId/carNumber"));
 
-        String requestGroupId = UUID.randomUUID().toString();
-
         List<WorkInfoEntity> entities = dto.getServices().stream()
                 .distinct()
                 .map(serviceType -> {
@@ -57,7 +54,6 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
                     WorkInfoEntity workInfo = new WorkInfoEntity();
                     workInfo.setUserCar(userCar);
                     workInfo.setWork(work);
-                    workInfo.setRequestGroupId(requestGroupId);
                     workInfo.setStatus("REQUESTED");
                     workInfo.setCarState("REQUESTED");
 
@@ -77,14 +73,11 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     public List<ServiceRequestDTO> getHistory(String userId) {
         List<WorkInfoEntity> all = serviceRequestDAO.findByUserIdOrderByRequestTimeDesc(userId);
 
-        Map<String, List<WorkInfoEntity>> grouped = all.stream()
-            .filter(w -> w.getRequestGroupId() != null)
-            .collect(Collectors.groupingBy(WorkInfoEntity::getRequestGroupId));
-
-        return grouped.values().stream()
-            .map(this::convertToDTO)
-            .sorted(Comparator.comparing(ServiceRequestDTO::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
-            .collect(Collectors.toList());
+        return all.stream()
+                .map(List::of)
+                .map(this::convertToDTO)
+                .sorted(Comparator.comparing(ServiceRequestDTO::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -102,34 +95,17 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         }
 
         WorkInfoEntity representative = optionalEntity.get();
-        if (representative.getRequestGroupId() == null) {
-            representative.setStatus(status);
-            representative.setCarState(status);
-            serviceRequestDAO.save(representative);
-            return true;
-        }
 
-        List<WorkInfoEntity> group = serviceRequestDAO.findByRequestGroupId(representative.getRequestGroupId());
-        if (group.isEmpty()) {
+        if (service != null
+                && representative.getWork() != null
+                && representative.getWork().getWorkType() != null
+                && !representative.getWork().getWorkType().equalsIgnoreCase(service)) {
             return false;
         }
 
-        if (service == null) {
-            for (WorkInfoEntity w : group) {
-                w.setStatus(status);
-                w.setCarState(status);
-            }
-        } else {
-            for (WorkInfoEntity w : group) {
-                if (w.getWork() != null && w.getWork().getWorkType() != null
-                        && w.getWork().getWorkType().equalsIgnoreCase(service)) {
-                    w.setStatus(status);
-                    w.setCarState(status);
-                }
-            }
-        }
-
-        serviceRequestDAO.saveAll(group);
+        representative.setStatus(status);
+        representative.setCarState(status);
+        serviceRequestDAO.save(representative);
         return true;
     }
 

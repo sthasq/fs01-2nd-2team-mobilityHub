@@ -10,5 +10,4 @@ public interface ServiceRequestDAO {
     List<WorkInfoEntity> saveAll(Iterable<WorkInfoEntity> entities);
     Optional<WorkInfoEntity> findById(Long id);
     List<WorkInfoEntity> findByUserIdOrderByRequestTimeDesc(String userId);
-    List<WorkInfoEntity> findByRequestGroupId(String requestGroupId);
 }

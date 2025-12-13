@@ -89,7 +89,6 @@ CREATE TABLE `work_info` (
   `request_time` datetime(6) DEFAULT NULL,
   `user_car_id` bigint DEFAULT NULL,
   `car_state` varchar(255) NOT NULL,
-  `request_group_id` varchar(255) DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
   `additional_request` text,
   `sector_id` char(3) DEFAULT NULL,

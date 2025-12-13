@@ -33,9 +33,4 @@ public class ServiceRequestDAOImpl implements ServiceRequestDAO {
     public List<WorkInfoEntity> findByUserIdOrderByRequestTimeDesc(String userId) {
         return workInfoRepository.findByUserCar_User_UserIdOrderByRequestTimeDesc(userId);
     }
-
-    @Override
-    public List<WorkInfoEntity> findByRequestGroupId(String requestGroupId) {
-        return workInfoRepository.findByRequestGroupId(requestGroupId);
-    }
 }
