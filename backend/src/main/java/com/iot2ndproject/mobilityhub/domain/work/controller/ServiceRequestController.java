@@ -1,5 +1,8 @@
 package com.iot2ndproject.mobilityhub.domain.work.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iot2ndproject.mobilityhub.domain.mqtt.MyPublisher;
+import com.iot2ndproject.mobilityhub.domain.parkingmap.service.RouteService;
 import com.iot2ndproject.mobilityhub.domain.work.dto.ServiceRequestDTO;
 import com.iot2ndproject.mobilityhub.domain.work.service.ServiceRequestService;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,11 +21,23 @@ import java.util.Optional;
 public class ServiceRequestController {
 
     private final ServiceRequestService serviceRequestService;
+    private final MyPublisher mqttPublisher;
+    private final RouteService routeService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping
     public ResponseEntity<?> createServiceRequest(@RequestBody ServiceRequestDTO dto) {
         try {
             ServiceRequestDTO created = serviceRequestService.create(dto);
+
+            // MQTT 경로 명령 발행
+            try {
+                publishRouteCommand(created);
+            } catch (Exception mqttEx) {
+                System.err.println("MQTT publish 실패: " + mqttEx.getMessage());
+                // MQTT 실패는 서비스 요청 성공 자체에 영향 주지 않음
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -69,6 +85,35 @@ public class ServiceRequestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    /**
+     * ServiceRequestDTO → MQTT rccar/{carId}/command 발행
+     */
+    private void publishRouteCommand(ServiceRequestDTO dto) throws Exception {
+        if (dto == null || dto.getServices() == null || dto.getServices().isEmpty()) {
+            return;
+        }
+
+        // services 리스트를 work_type 형식으로 변환 (park,carwash 등)
+        String workType = String.join(",", dto.getServices());
+        
+        // 경로 계산
+        List<Integer> route = routeService.calculateRoute(workType);
+
+        // carId는 carNumber 또는 id 기반 (단순 예시)
+        String carId = dto.getCarNumber() != null ? dto.getCarNumber().replaceAll("\\s+", "") : "default";
+
+        // MQTT 페이로드 구성
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("route", route);
+        payload.put("workType", workType);
+
+        String jsonPayload = objectMapper.writeValueAsString(payload);
+        String topic = "rccar/" + carId + "/command";
+
+        System.out.println(">>> MQTT Publish: " + topic + " | " + jsonPayload);
+        mqttPublisher.sendToMqtt(jsonPayload, topic);
     }
 }
 
