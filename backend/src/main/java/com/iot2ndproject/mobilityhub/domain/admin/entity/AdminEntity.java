@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminEntity {
+
     @Id
     private String adminId; // 관리자 아이디
 
@@ -24,4 +25,10 @@ public class AdminEntity {
 
     @Column(nullable = false)
     private String adminName; // 관리자 이름
+
+    @Column(nullable = false)
+    private String email;     // 이메일
+
+    @Column(nullable = false)
+    private String phone;     // 전화번호
 }
