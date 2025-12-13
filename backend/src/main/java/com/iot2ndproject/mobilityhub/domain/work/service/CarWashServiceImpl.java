@@ -48,12 +48,13 @@ public class CarWashServiceImpl implements CarWashService {
 
         return list.stream()
                 .filter(w -> w.getWork() != null
-                && (w.getWork().getWorkId() == 3 || w.getWork().getWorkId() == 4))
+                && w.getWork().getWorkType() != null
+                && w.getWork().getWorkType().equalsIgnoreCase("carwash"))
                 .filter(w -> w.getRequestTime().toLocalDate().isEqual(LocalDate.now()))
                 .map(w -> {
                     WashResponse dto = modelMapper.map(w, WashResponse.class);
-                    if(w.getCar() != null){
-                        dto.setCarNumber(w.getCar().getCarNumber());
+                    if(w.getUserCar().getCar() != null){
+                        dto.setCarNumber(w.getUserCar().getCar().getCarNumber());
                     }
                     return dto;
                 })

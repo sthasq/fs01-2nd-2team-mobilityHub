@@ -1,6 +1,7 @@
 import "../style/EntranceExitSection.css";
 import { useState, useEffect } from "react";
 import LicenseModal from "./LicenseModal.jsx";
+
 import { getTodayEntry, getTodayExit } from "../../api/EntranceAPI";
 
 export default function EntranceExitSection() {
@@ -18,6 +19,10 @@ export default function EntranceExitSection() {
     setEntryList(entry);
     setExitList(exit);
   };
+  // 페이지 로드 시 데이터 가져오기
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const openModal = (item, type) => {
     setModalData({
