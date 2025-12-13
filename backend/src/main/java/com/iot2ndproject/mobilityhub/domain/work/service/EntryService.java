@@ -4,9 +4,7 @@ import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.image.repository.ImageRepository;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.repository.ParkingRepository;
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.repository.CarRepository;
 import com.iot2ndproject.mobilityhub.domain.vehicle.repository.UserCarRepository;
 import com.iot2ndproject.mobilityhub.domain.work.dto.OcrEntryRequest;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
@@ -14,7 +12,7 @@ import com.iot2ndproject.mobilityhub.domain.work.repository.WorkInfoRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
