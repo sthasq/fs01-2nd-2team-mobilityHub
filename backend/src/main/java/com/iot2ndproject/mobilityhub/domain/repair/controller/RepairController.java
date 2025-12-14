@@ -20,6 +20,11 @@ public class RepairController {
         return repairService.repairList();
     }
 
+    @GetMapping("/b")
+    public List<StockStatusResponse> stockList(){
+        return repairService.stockList();
+    }
+
     // 정비존페이지 들어갔을 때
     @GetMapping("/list")
     public ResponseDTO list() {

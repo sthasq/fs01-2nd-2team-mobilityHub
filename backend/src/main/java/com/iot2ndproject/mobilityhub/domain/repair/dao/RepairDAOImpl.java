@@ -1,7 +1,5 @@
 package com.iot2ndproject.mobilityhub.domain.repair.dao;
 
-import com.iot2ndproject.mobilityhub.domain.repair.dto.StockCreateRequest;
-import com.iot2ndproject.mobilityhub.domain.repair.dto.StockUpdateRequest;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.ReportEntity;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
 import com.iot2ndproject.mobilityhub.domain.repair.repository.RepairReportRepository;

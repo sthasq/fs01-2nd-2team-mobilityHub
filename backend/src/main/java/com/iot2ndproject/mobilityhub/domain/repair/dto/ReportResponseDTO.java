@@ -1,7 +1,5 @@
 package com.iot2ndproject.mobilityhub.domain.repair.dto;
 
-import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

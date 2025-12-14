@@ -29,6 +29,7 @@ public class WorkInfoEntity {
     private UserCarEntity userCar; // 유저-차 ID
 
     @CreationTimestamp
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime requestTime; // 사용자 요청시간
 
     @ManyToOne
@@ -47,8 +48,10 @@ public class WorkInfoEntity {
     @Column(columnDefinition = "TEXT")
     private String additionalRequest; // 추가요청(주로 정비)
 
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime entryTime; // 입차시간
 
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime exitTime; // 출차시간
 
     // 이미지ID 연관관계해서 추가하기
