@@ -25,6 +25,7 @@ spring:
     topic:
       command: server/command # 발행(Publish)할 토픽
       sensor: heaves/home/web/sensor/dht11 # 구독(Subscribe)할 토픽
+      position: rccar/+/position # RC카 위치 신호 구독 토픽
 
   jpa:
     show-sql: true #JPA가 생성하는 sql문을 콘솔에 보여준다
