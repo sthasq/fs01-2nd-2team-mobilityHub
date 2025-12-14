@@ -40,6 +40,10 @@ SPEED_FORWARD = 65    # 전진 속도
 SPEED_TURN = 60       # 회전 속도
 SPEED_SLOW = 40       # 저속 이동
 
+# 전역 PWM 객체 (초기화 전에는 None)
+pwmA = None
+pwmB = None
+
 
 def setPinConfig(EN, INA, INB):
     """모터 핀 초기화 및 PWM 설정"""
@@ -70,6 +74,10 @@ def setMotorControl(pwm, INA, INB, speed, stat):
 
 def setMotor(ch, speed, stat):
     """채널별 모터 제어"""
+    global pwmA, pwmB
+    if pwmA is None or pwmB is None:
+        # 모터가 초기화되지 않았으면 무시
+        return
     if ch == CH1:
         setMotorControl(pwmA, IN1, IN2, speed, stat)
     else:
@@ -82,6 +90,10 @@ def setMotor(ch, speed, stat):
 
 def stop():
     """정지"""
+    global pwmA, pwmB
+    if pwmA is None or pwmB is None:
+        # 모터가 초기화되지 않았으면 무시
+        return
     setMotor(CH1, 0, STOP)
     setMotor(CH2, 0, STOP)
     print("🛑 정지")
@@ -168,6 +180,7 @@ def print_help():
 # =========================
 
 if __name__ == "__main__":
+    global pwmA, pwmB
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     

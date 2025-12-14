@@ -55,7 +55,7 @@ pwmB = None
 # ==========================================
 # MQTT 설정
 # ==========================================
-BROKER_ADDRESS = "192.168.35.183"  # application.yaml의 MQTT 브로커 주소
+BROKER_ADDRESS = "172.17.80.1"  # application.yaml의 MQTT 브로커 주소
 PORT = 1883
 SUBSCRIBE_TOPIC_COMMAND = "rccar/+/command"  # 경로 명령 구독
 SUBSCRIBE_TOPIC_SERVICE = "rccar/+/service"   # 서비스 완료 신호 구독
@@ -105,7 +105,7 @@ mqtt_client = None
 # 여기서는 추가 초기화 불필요
 
 
-def on_connect(client, userdata, flags, rc, properties=None):
+def on_connect(client, userdata, flags, rc):
     """브로커 연결 성공 시 구독 신청"""
     if rc == 0:
         print(f"✅ MQTT 브로커 연결 성공: {BROKER_ADDRESS}")
@@ -120,7 +120,7 @@ def on_connect(client, userdata, flags, rc, properties=None):
         print(f"❌ 연결 실패, return code: {rc}")
 
 
-def on_disconnect(client, userdata, rc, properties=None):
+def on_disconnect(client, userdata, rc):
     """브로커 연결 끊김"""
     print("🔌 MQTT 브로커 연결 종료")
 
@@ -319,8 +319,7 @@ def follow_route_with_node_detection():
         
         # 모터 초기화 (keyboard_control 모듈의 전역 변수에 할당)
         # keyboard_control의 setMotor 함수가 pwmA, pwmB를 사용하므로 여기서 초기화
-        # pwmA, pwmB가 없으면 AttributeError 발생 가능하므로 hasattr로 체크
-        if not hasattr(kc, 'pwmA') or kc.pwmA is None or not hasattr(kc, 'pwmB') or kc.pwmB is None:
+        if kc.pwmA is None or kc.pwmB is None:
             kc.pwmA = setPinConfig(ENA, IN1, IN2)
             kc.pwmB = setPinConfig(ENB, IN3, IN4)
             print("✅ 모터 초기화 완료")
@@ -473,7 +472,7 @@ if __name__ == "__main__":
     print("=" * 60)
 
     # MQTT 클라이언트 생성
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, CLIENT_ID)
+    client = mqtt.Client(CLIENT_ID)
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message
@@ -481,7 +480,14 @@ if __name__ == "__main__":
     try:
         # 브로커 연결
         print(f"🔌 브로커 연결 시도: {BROKER_ADDRESS}:{PORT}")
-        client.connect(BROKER_ADDRESS, PORT, keepalive=60)
+        print("   (연결이 안 되면 네트워크 설정과 브로커 주소를 확인하세요)")
+        try:
+            client.connect(BROKER_ADDRESS, PORT, keepalive=60)
+        except Exception as connect_error:
+            print(f"❌ MQTT 브로커 연결 실패: {connect_error}")
+            print(f"   브로커 주소: {BROKER_ADDRESS}:{PORT}")
+            print("   네트워크 연결과 브로커 상태를 확인하세요.")
+            raise
         
         # 메시지 루프 시작 (블로킹)
         print("📡 메시지 수신 대기 중... (Ctrl+C로 종료)\n")
@@ -490,15 +496,24 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n⏹️  사용자 중단")
         is_running = False
-        stop()
+        try:
+            stop()
+        except:
+            pass
     except Exception as e:
         print(f"❌ 오류 발생: {e}")
         import traceback
         traceback.print_exc()
     finally:
-        client.disconnect()
+        try:
+            client.disconnect()
+        except:
+            pass
         is_running = False
-        stop()
+        try:
+            stop()
+        except:
+            pass
         try:
             GPIO.cleanup()
         except:
