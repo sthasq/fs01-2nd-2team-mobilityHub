@@ -57,7 +57,9 @@ const CarWashSection = () => {
   const washingCar = carWashing.find((item) => item.carStateNodeId === CAR_STATE.WASHING);
 
   // 대기 중 차량
-  const waitCarList = carWashing.filter((item) => [CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId));
+  const waitCarList = carWashing.filter((item) =>
+    [CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId)
+  );
   const waitCarCount = waitCarList.length;
 
   // 완료 차량
@@ -119,7 +121,11 @@ const CarWashSection = () => {
           </div>
           <div className="list-content">
             {carWashing
-              .filter((item) => [CAR_STATE.WASHING, CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId))
+              .filter((item) =>
+                [CAR_STATE.WASHING, CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(
+                  item.carStateNodeId
+                )
+              )
               .map((list) => (
                 <div key={list.id} className="list-data">
                   <div>
