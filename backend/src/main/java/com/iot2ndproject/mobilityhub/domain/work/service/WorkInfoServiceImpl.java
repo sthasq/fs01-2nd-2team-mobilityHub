@@ -3,12 +3,14 @@ package com.iot2ndproject.mobilityhub.domain.work.service;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.repository.CarRepository;
+import com.iot2ndproject.mobilityhub.domain.work.dao.WorkListDAO;
 import com.iot2ndproject.mobilityhub.domain.work.dto.WorkInfoResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.work.dto.EntranceEntryView;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.domain.work.repository.WorkInfoRepository;
 import com.iot2ndproject.mobilityhub.domain.work.repository.WorksearchRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,6 +24,9 @@ public class WorkInfoServiceImpl implements WorkInfoService {
     private final WorksearchRepository worksearchRepository;
     private final WorkInfoRepository workInfoRepository;
     private final CarRepository carRepository;
+
+    @Autowired
+    private WorkListDAO dao;
 
     // ✔ 금일 입차
     @Override
@@ -65,6 +70,23 @@ public class WorkInfoServiceImpl implements WorkInfoService {
 
         car.setCarNumber(newCarNumber);
         carRepository.save(car);
+    }
+
+    @Override
+    public List<WorkInfoResponseDTO> findAll() {
+        System.out.println("작업목록 service");
+
+        return dao.findAll()
+                .stream()
+                .map(entity -> {
+                    WorkInfoResponseDTO dto = new WorkInfoResponseDTO();
+                    dto.setWorkId(entity.getWork().getWorkId());
+                    dto.setWorkType(entity.getWork().getWorkType());
+                    dto.setEntryTime(entity.getRequestTime());
+                    dto.setExitTime(entity.getExitTime());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     // 🔥 Projection → DTO 변환

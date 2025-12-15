@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class WorkInfoDAOImpl implements WorkInfoDAO{
+public class WorkListDAOImpl implements WorkListDAO {
     private final WorkInfoRepository repository;
 
     @Override

@@ -97,7 +97,7 @@ const MainSection = () => {
           <div className="chart-title">
             <h3>금일 이용회원 (구역별)</h3>
           </div>
-          <UseByArea className="chart-content" data={workList} />
+          <UseByArea className="chart-content" workList={workList} />
         </div>
       </div>
 
