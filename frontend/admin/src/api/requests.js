@@ -3,9 +3,6 @@
 const request = {
   carWashing: "/carwash/select",
 
-  // 작업 전체 목록
-  workList: "/entrance/work/list",
-
   // 입출구 API 추가
   todayEntry: "/entrance/today/entry",
   todayExit: "/entrance/today/exit",
