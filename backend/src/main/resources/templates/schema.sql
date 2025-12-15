@@ -40,6 +40,8 @@ CREATE TABLE `image` (
   `reg_date` datetime(6) DEFAULT NULL,
   `camera_id` varchar(255) NOT NULL,
   `image_path` varchar(255) DEFAULT NULL,
+  `ocr_number` varchar(255) DEFAULT NULL,
+  `corrected_ocr_number` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`image_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

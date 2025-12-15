@@ -18,7 +18,7 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
     List<WorkInfoEntity> findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(String userId);
 
 
-    Optional<WorkInfoEntity> findTopByImageIsNotNullOrderByRequestTimeDesc();
+//    Optional<WorkInfoEntity> findTopByImageIsNotNullOrderByRequestTimeDesc();
     
     // carNumber로 최신 작업 정보 조회
     Optional<WorkInfoEntity> findTopByUserCar_Car_CarNumberOrderByRequestTimeDesc(String carNumber);

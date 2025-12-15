@@ -46,7 +46,15 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         if (dto.getServices() == null || dto.getServices().isEmpty()) {
             throw new IllegalArgumentException("services is required");
         }
-        UserCarEntity userCar = serviceRequestDAO.findByUser_UserIdAndCar_CarNumber(dto.getUserId(), dto.getCarNumber())
+
+        // 입력 시 공백/하이픈 등으로 인한 불일치를 방지하기 위해 차번호를 정규화해서 조회
+        String normalizedCarNumber = normalizeCarNumber(dto.getCarNumber());
+        String originalCarNumber = dto.getCarNumber().trim();
+
+        UserCarEntity userCar = serviceRequestDAO.findByUser_UserIdAndCar_CarNumber(dto.getUserId(), originalCarNumber)
+                .or(() -> normalizedCarNumber.equals(originalCarNumber)
+                        ? java.util.Optional.empty()
+                        : serviceRequestDAO.findByUser_UserIdAndCar_CarNumber(dto.getUserId(), normalizedCarNumber))
                 .orElseThrow(() -> new IllegalArgumentException("UserCar not found for userId/carNumber"));
 
         // work.work_type은 아래 5개 타입 중 하나만 사용한다 (data.sql 기준)
@@ -256,6 +264,17 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
             return "IN_PROGRESS";
         }
         return "REQUESTED";
+    }
+
+    private String normalizeCarNumber(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return trimmed;
+        }
+        return trimmed.replaceAll("\\s+", "").replace("-", "");
     }
 
     private List<String> parseWorkTypes(WorkInfoEntity workInfo) {
