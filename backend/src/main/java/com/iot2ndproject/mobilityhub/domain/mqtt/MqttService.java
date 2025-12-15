@@ -2,6 +2,8 @@ package com.iot2ndproject.mobilityhub.domain.mqtt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
+import com.iot2ndproject.mobilityhub.domain.image.repository.ImageRepository;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.entity.ParkingMapNodeEntity;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
@@ -24,7 +26,8 @@ public class MqttService {
     private final ParkingMapNodeRepository parkingMapNodeRepository;
     private final MyPublisher mqttPublisher;
     private final ObjectMapper objectMapper;
-    
+    private final ImageRepository imageRepository;
+
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<String> message) {
         String payload = message.getPayload();
@@ -39,8 +42,13 @@ public class MqttService {
             // 기타 토픽 처리 (기존 로직)
             // TODO: 다른 토픽별 비즈니스 로직 처리
         }
+        if ("parking/web/entrance/image".equals(topic)) {
+            handleEntranceImage(payload);
+            return;
+        }
+
     }
-    
+
     /**
      * RC카 위치 신호 처리
      * topic: MQTT 토픽 (예: rccar/{carId}/position)
@@ -101,7 +109,8 @@ public class MqttService {
             e.printStackTrace();
         }
     }
-    
+
+
     /**
      * 구역별 라즈베리파이에 MQTT 신호 발행
      * nodeName을 기반으로 구역을 판단하여 신호 발행
@@ -143,4 +152,34 @@ public class MqttService {
             e.printStackTrace();
         }
     }
+    @Transactional
+    private void handleEntranceImage(String payload) {
+        try {
+            Map<String, Object> data = objectMapper.readValue(
+                    payload, new TypeReference<Map<String, Object>>() {}
+            );
+
+            String cameraId = (String) data.get("cameraId");
+            String imagePath = (String) data.get("imagePath");
+            String ocrNumber = (String) data.get("ocrNumber"); // null 가능
+
+            ImageEntity image = new ImageEntity();
+            image.setCameraId(cameraId);
+            image.setImagePath(imagePath);
+            image.setOcrNumber(ocrNumber);
+            image.setCorrectedOcrNumber(null);
+            // regDate는 @CreationTimestamp로 자동
+
+            imageRepository.save(image);
+
+            System.out.println("✅ image 테이블 저장 완료");
+            System.out.println("   cameraId=" + cameraId);
+            System.out.println("   imagePath=" + imagePath);
+
+        } catch (Exception e) {
+            System.err.println("❌ 입구 이미지 처리 실패");
+            e.printStackTrace();
+        }
+    }
+
 }

@@ -33,6 +33,7 @@ export const updateOcrNumber = async (imageId, carNumber) => {
     carNumber,
   });
 };
+// OCR 번호 저장??
 
 // 입차 승인
 export const approveEntrance = async (workId) => {

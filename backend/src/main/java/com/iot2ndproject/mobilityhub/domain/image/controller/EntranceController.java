@@ -3,6 +3,8 @@ package com.iot2ndproject.mobilityhub.domain.image.controller;
 import com.iot2ndproject.mobilityhub.domain.image.dto.EntranceResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.image.dto.OcrEntryRequestDTO;
 import com.iot2ndproject.mobilityhub.domain.image.dto.OcrUpdateRequestDTO;
+import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
+import com.iot2ndproject.mobilityhub.domain.image.repository.ImageRepository;
 import com.iot2ndproject.mobilityhub.domain.image.service.EntranceService;
 import com.iot2ndproject.mobilityhub.domain.work.service.EntryService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,19 @@ public class EntranceController {
 
     private final EntranceService entranceService;
     private final EntryService entryService;
+    private final ImageRepository imageRepository;
+
+    @GetMapping("/latest_image")
+    public ResponseEntity<?> getLatestEntranceImage() {
+
+        ImageEntity image = imageRepository.findTopByOrderByRegDateDesc();
+
+        if (image == null) {
+            return ResponseEntity.ok(null);
+        }
+
+        return ResponseEntity.ok(image);
+    }
 
     @PostMapping("/ocr")
     public ResponseEntity<?> ocr(@RequestBody OcrEntryRequestDTO dto) {

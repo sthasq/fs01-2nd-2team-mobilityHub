@@ -10,7 +10,7 @@ const API_BASE = "http://localhost:9000";
 const PAGE_SIZE = 6;
 
 // ✅ MQTT Broker
-const BROKER_URL = "ws://192.168.14.56:9001";
+const BROKER_URL = "ws://192.168.0.201:9001";
 
 // ✅ 라즈베리파이와 동일한 토픽
 const ENTRANCE_CAM_TOPIC = "parking/web/entrance/cam";
