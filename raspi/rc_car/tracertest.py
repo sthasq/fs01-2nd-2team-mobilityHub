@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+"""Backward-compatible shim.
 
-import RPi.GPIO as GPIO
-from time import sleep
+service_handler now uses raspi/rc_car/line_sensor.py directly.
+This file remains to avoid breaking old imports.
+"""
 
+from line_sensor import *
 # 모터 상태
 STOP     = 0
 FORWARD  = 1
@@ -43,8 +46,8 @@ LS_RIGHT  = 22   # 오른쪽 센서 (BCM 13 예시)
 #   - 흰 바닥: HIGH(1)
 # 라고 가정.
 # 만약 반대라면 LINE/SPACE 값을 1/0 으로 바꿔줘라.
-LINE  = 1   # 선(검정) 감지
-SPACE = 0   # 바닥(선 없음)
+LINE  = 0   # 선(검정) 감지
+SPACE = 1   # 바닥(선 없음)
 
 # =========================
 # 속도 설정
@@ -188,19 +191,11 @@ def is_inside_corridor(left, center, right):
 def is_node_pattern(left, center, right):
     """
     노드 패턴 정의:
-    000 이 평소/가드라인 안,
-    노드마다 중앙 센서만 선을 밟게 그릴 거라면: 010 패턴 사용.
-    필요하면 111 같은 것도 추가로 노드로 인식 가능.
+    - 111: 세 센서 모두 라인 감지 시 '노드'로 인식
+    - 000: 평소/가드라인 안, 노드 아님
+    - 010 등 부분 감지는 노드로 인식하지 않음
     """
-    # 010 패턴: 중앙만 선을 감지
-    if (left == SPACE) and (center == LINE) and (right == SPACE):
-        return True
-
-    # 만약 노드에서 세 개 다 선을 밟게 그릴 거라면 아래도 허용
-    if (left == LINE) and (center == LINE) and (right == LINE):
-        return True
-
-    return False
+    return (left == LINE) and (center == LINE) and (right == LINE)
 
 
 # 🗺️ 테스트용 하드코딩 경로 (수정 가능)

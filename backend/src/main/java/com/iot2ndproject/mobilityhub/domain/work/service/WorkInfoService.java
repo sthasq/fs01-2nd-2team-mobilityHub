@@ -14,4 +14,7 @@ public interface WorkInfoService {
 
     // ✔ 번호판 수정
     void updatePlateNumber(Long workInfoId, String newCarNumber);
+
+    // 작업 전체 목록 보기
+    List<WorkInfoResponseDTO> findAll();
 }

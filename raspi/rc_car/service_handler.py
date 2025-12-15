@@ -5,23 +5,20 @@ RC카 서비스 요청 MQTT 핸들러
 키보드 제어로 차량 이동 + 라인트레이싱으로 노드 감지
 """
 
-import paho.mqtt.client as mqtt
 import json
 import time
 import threading
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO  # type: ignore[import-not-found]
+except Exception:  # pragma: no cover
+    GPIO = None
 from time import sleep
-import sys
-import tty
-import termios
-import select
 
-# 키보드 제어 모듈에서 모터 제어 함수 import
-# tracertest.py에서 노드 감지 함수 import
-    # keyboard_control 모듈 import (같은 디렉토리에 있으면 자동으로 찾음)
-import keyboard_control as kc
-    
-    # 필요한 함수/상수들
+import mqtt_gateway
+
+# service_handler에서 필요한 최소 로직만 모듈로 분리한 버전 사용
+import motor as kc
+
 forward = kc.forward
 stop = kc.stop
 turn_left = kc.turn_left
@@ -43,15 +40,13 @@ IN2 = kc.IN2
 IN3 = kc.IN3
 IN4 = kc.IN4
 
-from tracertest import (
-    setup_line_tracer, read_line_sensors, is_node_pattern,
-    LS_LEFT, LS_CENTER, LS_RIGHT
-)
+from line_sensor import setup_line_tracer, read_line_sensors, is_node_pattern
 
+MQTT_CONFIG = mqtt_gateway.DEFAULT_CONFIG
 # ==========================================
 # MQTT 설정
 # ==========================================
-BROKER_ADDRESS = "192.168.35.183"  # application.yaml의 MQTT 브로커 주소
+BROKER_ADDRESS = "192.168.14.69"  # application.yaml의 MQTT 브로커 주소
 PORT = 1883
 SUBSCRIBE_TOPIC_COMMAND = "rccar/+/command"  # 경로 명령 구독
 SUBSCRIBE_TOPIC_SERVICE = "rccar/+/service"   # 서비스 완료 신호 구독
@@ -86,6 +81,10 @@ NODE_NAMES = {
     23: "기점_15",
 }
 
+# 건물 밖을 나타내는 가상 노드 (출구 이후 마지막 위치 표시용)
+OUTSIDE_NODE_ID = 0
+NODE_NAMES[OUTSIDE_NODE_ID] = "건물 밖"
+
 # 전역 변수
 current_route = []
 current_work_type = ""
@@ -99,26 +98,6 @@ mqtt_client = None
 
 # GPIO 초기화는 keyboard_control.py와 tracertest.py에서 각각 처리됨
 # 여기서는 추가 초기화 불필요
-
-
-def on_connect(client, userdata, flags, rc):
-    """브로커 연결 성공 시 구독 신청"""
-    if rc == 0:
-        print(f"✅ MQTT 브로커 연결 성공: {BROKER_ADDRESS}")
-        client.subscribe(SUBSCRIBE_TOPIC_COMMAND)
-        client.subscribe(SUBSCRIBE_TOPIC_SERVICE)
-        client.subscribe(SUBSCRIBE_TOPIC_CALL)
-        print(f"📡 구독 토픽:")
-        print(f"   - {SUBSCRIBE_TOPIC_COMMAND}")
-        print(f"   - {SUBSCRIBE_TOPIC_SERVICE}")
-        print(f"   - {SUBSCRIBE_TOPIC_CALL}")
-    else:
-        print(f"❌ 연결 실패, return code: {rc}")
-
-
-def on_disconnect(client, userdata, rc):
-    """브로커 연결 끊김"""
-    print("🔌 MQTT 브로커 연결 종료")
 
 
 def on_message(client, userdata, message):
@@ -305,8 +284,11 @@ def follow_route_with_node_detection():
     global current_route, current_car_id, is_running
     global current_route_index, is_waiting_service, is_waiting_call
     global auto_forward_mode, mqtt_client
+    awaiting_outside = False  # 출구 통과 후 건물 밖 노드 감지 대기
     
     try:
+        if GPIO is None:
+            raise RuntimeError("RPi.GPIO is required to run this on Raspberry Pi")
         # GPIO 초기화 (한 번만)
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
@@ -333,20 +315,23 @@ def follow_route_with_node_detection():
             forward()
         
         # 현재 목표 노드
+        # 초기에는 건물 밖에 있으므로 target_node_id는 None
+        # 첫 번째 노드를 감지하면 그때부터 경로를 따라감
         target_node_id = None
-        if current_route and current_route_index < len(current_route):
-            target_node_id = current_route[current_route_index]
         
         node_count = 0
         in_node = False
+        is_first_node = True  # 첫 번째 노드 감지 여부
         
         if auto_forward_mode:
             print(f"\n🚀 자동 전진 모드: 경로 따라 이동 시작")
         else:
             print(f"\n🚀 경로 따라 이동 시작 (키보드로 조작하세요)")
-        print(f"   목표 노드: {target_node_id}")
+        print(f"   현재 위치: 건물 밖")
+        if current_route:
+            print(f"   첫 번째 목표: {current_route[0]} ({NODE_NAMES.get(current_route[0], '알 수 없음')})")
         
-        while is_running and target_node_id is not None:
+        while is_running and (is_first_node or target_node_id is not None or awaiting_outside):
             # 자동 전진 모드일 때만 자동으로 전진
             if auto_forward_mode:
                 # 노드가 아닐 때 전진 유지
@@ -362,6 +347,41 @@ def follow_route_with_node_detection():
                     # 노드 진입
                     in_node = True
                     node_count += 1
+                    
+                    # 첫 번째 노드인 경우
+                    if is_first_node:
+                        if current_route and current_route_index < len(current_route):
+                            expected_node = current_route[current_route_index]
+                            node_name = NODE_NAMES.get(expected_node, f"노드_{expected_node}")
+                            
+                            print(f"\n📍 첫 번째 노드 감지: {expected_node} ({node_name})")
+                            
+                            # 잠시 정지
+                            stop()
+                            sleep(0.5)
+                            
+                            # 위치 발행
+                            publish_position(mqtt_client, current_car_id, expected_node, node_name)
+                            
+                            # 첫 번째 노드 감지 완료
+                            is_first_node = False
+                            
+                            # 다음 노드로 이동
+                            current_route_index += 1
+                            if current_route_index < len(current_route):
+                                target_node_id = current_route[current_route_index]
+                                print(f"   다음 목표: {target_node_id} ({NODE_NAMES.get(target_node_id, '알 수 없음')})")
+                            else:
+                                # 첫 번째 노드가 마지막 노드인 경우 (이론적으로는 발생하지 않아야 함)
+                                target_node_id = None
+                            
+                            # 자동 전진 모드일 때 자동으로 전진 재개
+                            if auto_forward_mode:
+                                sleep(0.3)
+                                forward()
+                            else:
+                                sleep(0.3)
+                        continue
                     
                     # 현재 노드 ID 확인 (경로에서 예상되는 노드)
                     if current_route_index < len(current_route):
@@ -400,12 +420,16 @@ def follow_route_with_node_detection():
                                 stop()
                                 break
                             elif node_name == "출구":
-                                # 출구 도착
-                                print("🚪 출구 도착 - 작업 완료")
-                                auto_forward_mode = False  # 자동 전진 모드 해제
-                                is_running = False
-                                stop()
-                                break
+                                # 출구 도착: 출구 이후 실제 건물 밖 노드까지 진행 후 종료
+                                print("🚪 출구 도착 - 건물 밖으로 이동 중...")
+                                awaiting_outside = True
+                                auto_forward_mode = True  # 출구 이후는 자동 전진 유지
+                                # 다음 감지되는 노드를 건물 밖으로 간주
+                                # target_node_id는 더 이상 사용하지 않음
+                                target_node_id = None
+                                sleep(0.3)
+                                forward()
+                                # 계속 루프 진행하여 다음 노드 감지 대기
                         else:
                             # 다음 노드로 이동
                             current_route_index += 1
@@ -428,6 +452,20 @@ def follow_route_with_node_detection():
                 # 노드 영역에서 나감
                 if in_node:
                     in_node = False
+
+            # 출구 이후 '건물 밖' 노드 감지 처리
+            if awaiting_outside and in_node:
+                # 다음 노드 감지되면 '건물 밖'으로 처리
+                stop()
+                sleep(0.3)
+                # DB에는 nodeId를 NULL로 저장해야 하므로 None 전달
+                publish_position(mqtt_client, current_car_id, None, NODE_NAMES[OUTSIDE_NODE_ID])
+                print("🏁 건물 밖 노드 감지 - 종료")
+                awaiting_outside = False
+                auto_forward_mode = False
+                is_running = False
+                stop()
+                break
             
             sleep(0.05)  # 루프 딜레이
             
@@ -452,8 +490,9 @@ def publish_position(client, car_id, node_id, node_name):
         return
         
     topic = f"rccar/{car_id}/position"
+    # node_id가 None이면 JSON에서는 null로 직렬화되어 DB에 NULL로 저장되도록 함
     payload = {
-        "nodeId": node_id,
+        "nodeId": node_id if node_id is not None else None,
         "nodeName": node_name,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
@@ -471,27 +510,11 @@ if __name__ == "__main__":
     print("   키보드 제어 + 라인트레이싱 노드 감지")
     print("=" * 60)
 
-    # MQTT 클라이언트 생성
-    client = mqtt.Client(CLIENT_ID)
-    client.on_connect = on_connect
-    client.on_disconnect = on_disconnect
-    client.on_message = on_message
+    # MQTT 클라이언트 생성/연결 (설정/구독은 mqtt_gateway가 담당)
+    client = mqtt_gateway.create_client(MQTT_CONFIG, on_message)
 
     try:
-        # 브로커 연결
-        print(f"🔌 브로커 연결 시도: {BROKER_ADDRESS}:{PORT}")
-        print("   (연결이 안 되면 네트워크 설정과 브로커 주소를 확인하세요)")
-        try:
-            client.connect(BROKER_ADDRESS, PORT, keepalive=60)
-        except Exception as connect_error:
-            print(f"❌ MQTT 브로커 연결 실패: {connect_error}")
-            print(f"   브로커 주소: {BROKER_ADDRESS}:{PORT}")
-            print("   네트워크 연결과 브로커 상태를 확인하세요.")
-            raise
-        
-        # 메시지 루프 시작 (블로킹)
-        print("📡 메시지 수신 대기 중... (Ctrl+C로 종료)\n")
-        client.loop_forever()
+        mqtt_gateway.connect_and_loop_forever(client, MQTT_CONFIG)
 
     except KeyboardInterrupt:
         print("\n⏹️  사용자 중단")
@@ -515,7 +538,8 @@ if __name__ == "__main__":
         except:
             pass
         try:
-            GPIO.cleanup()
+            if GPIO is not None:
+                GPIO.cleanup()
         except:
             pass
         print("👋 종료 완료")

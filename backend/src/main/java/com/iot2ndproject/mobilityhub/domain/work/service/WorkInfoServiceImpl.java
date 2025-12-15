@@ -23,7 +23,6 @@ public class WorkInfoServiceImpl implements WorkInfoService {
     private final WorkInfoRepository workInfoRepository;
     private final CarRepository carRepository;
 
-
     // ✔ 금일 입차
     @Override
     public List<WorkInfoResponseDTO> getTodayEntryDTO() {
@@ -68,21 +67,20 @@ public class WorkInfoServiceImpl implements WorkInfoService {
         carRepository.save(car);
     }
 
+    @Override
+    public List<WorkInfoResponseDTO> findAll() {
+        return List.of();
+    }
+
+    // 🔥 Projection → DTO 변환
     private WorkInfoResponseDTO convertToDTO(EntranceEntryView v) {
 
         WorkInfoResponseDTO dto = new WorkInfoResponseDTO();
 
         dto.setId(v.getId());
         dto.setEntryTime(v.getEntryTime());
-        dto.setExitTime(v.getExitTime()); // ✅ 이제 정상
-
-        // 🔥 corrected OCR 우선 적용
-        String carNumber =
-                v.getImage_CorrectedOcrNumber() != null
-                        ? v.getImage_CorrectedOcrNumber()
-                        : v.getUserCar_Car_CarNumber();
-
-        dto.setCarNumber(carNumber);
+        dto.setExitTime(v.getExitTime());
+        dto.setCarNumber(v.getUserCar_Car_CarNumber());
         dto.setImagePath(v.getImage_ImagePath());
 
         dto.setCameraId(
@@ -93,5 +91,5 @@ public class WorkInfoServiceImpl implements WorkInfoService {
 
         return dto;
     }
-}
+    }
 
