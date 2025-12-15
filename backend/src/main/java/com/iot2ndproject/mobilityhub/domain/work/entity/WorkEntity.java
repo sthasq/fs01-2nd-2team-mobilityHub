@@ -24,4 +24,5 @@ public class WorkEntity {
     public WorkEntity(String workType){
         this.workType = workType;
     }
+
 }

@@ -50,4 +50,23 @@ public class RouteService {
                 throw new IllegalArgumentException("Unknown workType: " + workType);
         }
     }
+
+    /**
+     * 주차 노드에서 출구까지의 경로 계산
+     * @param currentNodeId 현재 노드 ID (주차 노드: 5, 7, 9 등)
+     * @return 출구(20)까지의 노드 ID 배열
+     */
+    public List<Integer> calculateExitRoute(int currentNodeId) {
+        // 주차 노드별 출구 경로
+        switch (currentNodeId) {
+            case 5: // 주차_1
+                return Arrays.asList(5, 23, 18, 19, 20);
+            case 7: // 주차_2
+                return Arrays.asList(7, 22, 18, 19, 20);
+            case 9: // 주차_3
+                return Arrays.asList(9, 21, 18, 19, 20);
+            default:
+                throw new IllegalArgumentException("주차 구역이 아닌 노드에서는 호출할 수 없습니다. 현재 노드 ID: " + currentNodeId);
+        }
+    }
 }

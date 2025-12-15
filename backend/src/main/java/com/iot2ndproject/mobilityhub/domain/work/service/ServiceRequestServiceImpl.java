@@ -1,17 +1,22 @@
 package com.iot2ndproject.mobilityhub.domain.work.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iot2ndproject.mobilityhub.domain.mqtt.MyPublisher;
+import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
+import com.iot2ndproject.mobilityhub.domain.parking.service.ParkingService;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.repository.UserCarRepository;
 import com.iot2ndproject.mobilityhub.domain.work.dao.ServiceRequestDAO;
 import com.iot2ndproject.mobilityhub.domain.work.dto.ServiceRequestDTO;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkEntity;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
-import com.iot2ndproject.mobilityhub.domain.work.repository.WorkRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -25,8 +30,9 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
 
     private final ServiceRequestDAO serviceRequestDAO;
     private final ParkingMapNodeRepository mapNodeRepository;
-    private final UserCarRepository userCarRepository;
-    private final WorkRepository workRepository;
+    private final ParkingService parkingService;
+    private final MyPublisher mqttPublisher;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -40,7 +46,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         if (dto.getServices() == null || dto.getServices().isEmpty()) {
             throw new IllegalArgumentException("services is required");
         }
-        UserCarEntity userCar = userCarRepository.findByUser_UserIdAndCar_CarNumber(dto.getUserId(), dto.getCarNumber())
+        UserCarEntity userCar = serviceRequestDAO.findByUser_UserIdAndCar_CarNumber(dto.getUserId(), dto.getCarNumber())
                 .orElseThrow(() -> new IllegalArgumentException("UserCar not found for userId/carNumber"));
 
         // work.work_type은 아래 5개 타입 중 하나만 사용한다 (data.sql 기준)
@@ -100,7 +106,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         }
 
         // work 엔티티는 DB seed(data.sql)에 존재하는 row를 work_id로 사용한다. (임의 생성 금지)
-        WorkEntity work = workRepository.findById(workId)
+        WorkEntity work = serviceRequestDAO.findWorkById(workId)
                 .orElseThrow(() -> new IllegalStateException("work_id not found in DB: " + workId + " (" + workType + ")"));
         if (work.getWorkType() == null || !work.getWorkType().equalsIgnoreCase(workType)) {
             throw new IllegalStateException("work table mismatch: id=" + workId + ", expected=" + workType + ", actual=" + work.getWorkType());
@@ -127,7 +133,30 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
             workInfo.setAdditionalRequest(dto.getAdditionalRequest());
         }
 
-        WorkInfoEntity saved = serviceRequestDAO.save(workInfo);
+        // WorkInfoEntity 저장 (주차 옵션 유무와 관계없이 저장 필요)
+        WorkInfoEntity saved;
+        
+        // 주차 옵션이 있으면 빈자리 확인 및 할당
+        if (hasPark) {
+            if (!parkingService.hasAvailableSpace()) {
+                throw new IllegalStateException("사용 가능한 주차 공간이 없습니다. 잠시 후 다시 시도해주세요.");
+            }
+            // 주차 공간 자동 할당 (첫 번째 빈 공간)
+            // WorkInfoEntity가 저장된 후에 할당해야 하므로 임시로 저장 후 업데이트
+            WorkInfoEntity tempSaved = serviceRequestDAO.save(workInfo);
+            try {
+                ParkingEntity allocatedParking = parkingService.allocateFirstAvailableSpace(tempSaved.getId());
+                tempSaved.setSectorId(allocatedParking);
+                saved = serviceRequestDAO.save(tempSaved);
+            } catch (Exception e) {
+                // 할당 실패 시 예외 전파
+                throw new IllegalStateException("주차 공간 할당에 실패했습니다: " + e.getMessage());
+            }
+        } else {
+            // 주차 옵션이 없는 경우 단순 저장
+            saved = serviceRequestDAO.save(workInfo);
+        }
+
         return convertToDTO(saved);
     }
 
@@ -271,5 +300,49 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
             return 2;
         }
         return 999;
+    }
+
+    @Override
+    @Transactional
+    public void completeService(Long workInfoId, String stage) {
+        if (workInfoId == null) {
+            throw new IllegalArgumentException("workInfoId는 필수입니다.");
+        }
+        if (stage == null || stage.isBlank()) {
+            throw new IllegalArgumentException("stage는 필수입니다.");
+        }
+
+        // WorkInfoEntity 조회
+        Optional<WorkInfoEntity> optionalWorkInfo = serviceRequestDAO.findById(workInfoId);
+        if (optionalWorkInfo.isEmpty()) {
+            throw new IllegalArgumentException("작업 정보를 찾을 수 없습니다: workInfoId=" + workInfoId);
+        }
+
+        WorkInfoEntity workInfo = optionalWorkInfo.get();
+
+        // 차량 번호 추출
+        String carNumber = null;
+        if (workInfo.getUserCar() != null && workInfo.getUserCar().getCar() != null) {
+            carNumber = workInfo.getUserCar().getCar().getCarNumber();
+        }
+
+        if (carNumber == null) {
+            throw new IllegalStateException("차량 번호를 찾을 수 없습니다.");
+        }
+
+        // RC카에 서비스 완료 신호 발행
+        String carId = carNumber.replaceAll("\\s+", "");
+        String topic = "rccar/" + carId + "/service";
+        Map<String, String> payload = new HashMap<>();
+        payload.put("stage", stage.toLowerCase());
+        payload.put("status", "done");
+
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(payload);
+            mqttPublisher.sendToMqtt(jsonPayload, topic);
+            System.out.println(">>> 서비스 완료 신호 발행: " + topic + " | " + jsonPayload);
+        } catch (Exception e) {
+            throw new RuntimeException("MQTT 신호 발행 실패: " + e.getMessage(), e);
+        }
     }
 }

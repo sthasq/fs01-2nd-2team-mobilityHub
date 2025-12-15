@@ -26,7 +26,7 @@ public interface RepairService {
     void updateStockQuantity(String inventoryId, int stockQuantity);
 
     // 재고 이름,유형,수량,가격 수정
-    void updateStockStatus(String inventoryId, StockUpdateRequest stockUpdateRequest);
+    void updateStockStatus(StockUpdateRequest stockUpdateRequest);
 
     // 보고서 전체 조회
     List<ReportResponseDTO> reportList();
@@ -38,7 +38,7 @@ public interface RepairService {
     void reportWrite(ReportRequestDTO reportRequestDTO);
 
     // 보고서 수정
-    void updateReport(String reportId, ReportRequestDTO reportRequestDTO);
+    void updateReport(ReportRequestDTO reportRequestDTO);
 
     // 보고서 삭제
     void deleteReport(String reportId);

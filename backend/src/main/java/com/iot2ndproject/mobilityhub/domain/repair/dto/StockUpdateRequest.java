@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StockUpdateRequest {
+    private String inventoryId;
     private String productName;   // 이름
     private String stockCategory; // 유형
     private int stockQuantity;    // 수량

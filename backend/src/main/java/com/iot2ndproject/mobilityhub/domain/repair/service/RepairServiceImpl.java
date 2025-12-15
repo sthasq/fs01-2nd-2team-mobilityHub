@@ -12,6 +12,7 @@ import com.iot2ndproject.mobilityhub.domain.vehicle.dao.UserCarDAO;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,6 +28,8 @@ public class RepairServiceImpl implements RepairService {
     private final RepairDAO repairDAO;
     private final UserCarDAO userCarDAO;
     private final AdminDAO adminDAO;
+
+    private final ModelMapper modelMapper;
 
     private final ParkingRepository parkingRepository;
 
@@ -93,6 +96,7 @@ public class RepairServiceImpl implements RepairService {
                 .stockCategory(stock.getStockCategory())
                 .stockQuantity(stock.getStockQuantity())
                 .stockPrice(stock.getStockPrice())
+                .minStockQuantity(stock.getMinStockQuantity())
                 .sectorId(parkingEntity)
                 .stockUnits(stock.getStockUnits())
                 .updateTime(LocalDateTime.now())
@@ -119,14 +123,16 @@ public class RepairServiceImpl implements RepairService {
     }
 
     @Override
-    public void updateStockStatus(String inventoryId, StockUpdateRequest request) {
-        StockStatusEntity entity = repairDAO.findByInventoryId(inventoryId);
+    public void updateStockStatus(StockUpdateRequest request) {
+        StockStatusEntity entity = repairDAO.findByInventoryId(request.getInventoryId());
+
         entity.setProductName(request.getProductName());
         entity.setStockCategory(request.getStockCategory());
         entity.setStockQuantity(request.getStockQuantity());
-        entity.setStockPrice(request.getStockPrice());
+        entity.setUpdateTime(LocalDateTime.now());
 
         repairDAO.updateStock(entity);
+
     }
 
     @Override
@@ -178,8 +184,9 @@ public class RepairServiceImpl implements RepairService {
     }
 
     @Override
-    public void updateReport(String reportId, ReportRequestDTO reportRequestDTO) {
-        ReportEntity entity = repairDAO.findByReportId(reportId);
+    public void updateReport(ReportRequestDTO reportRequestDTO) {
+        ReportEntity entity = repairDAO.findByReportId(reportRequestDTO.getReportId());
+
         entity.setRepairTitle(reportRequestDTO.getRepairTitle());
         entity.setRepairDetail(reportRequestDTO.getRepairDetail());
         entity.setRepairAmount(reportRequestDTO.getRepairAmount());

@@ -1,7 +1,11 @@
 package com.iot2ndproject.mobilityhub.domain.work.dao;
 
+import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
+import com.iot2ndproject.mobilityhub.domain.vehicle.repository.UserCarRepository;
+import com.iot2ndproject.mobilityhub.domain.work.entity.WorkEntity;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.domain.work.repository.WorkInfoRepository;
+import com.iot2ndproject.mobilityhub.domain.work.repository.WorkRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +17,8 @@ import java.util.Optional;
 public class ServiceRequestDAOImpl implements ServiceRequestDAO {
 
     private final WorkInfoRepository workInfoRepository;
+    private final UserCarRepository userCarRepository;
+    private final WorkRepository workRepository;
 
     @Override
     public WorkInfoEntity save(WorkInfoEntity entity) {
@@ -35,5 +41,15 @@ public class ServiceRequestDAOImpl implements ServiceRequestDAO {
         return java.util.Objects.requireNonNull(
                 workInfoRepository.findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(userId)
         );
+    }
+
+    @Override
+    public Optional<UserCarEntity> findByUser_UserIdAndCar_CarNumber(String userId, String carNumber) {
+        return userCarRepository.findByUser_UserIdAndCar_CarNumber(userId, carNumber);
+    }
+
+    @Override
+    public Optional<WorkEntity> findWorkById(int workId) {
+        return workRepository.findById(workId);
     }
 }

@@ -6,6 +6,8 @@ import { Check } from "lucide-react";
 import axios from "axios";
 import RepairReportModal from "../modal/RepairReportModal";
 import RepairHistoryModal from "../modal/RepairHistoryModal";
+import StockModal from "../modal/StockModal";
+import StockCreateModal from "../modal/StockCreateModal";
 
 //const BROKER_URL = import.meta.env.VITE_BROKER_URL;
 // MQTT 브로커 주소 --> cctv 연결할 때
@@ -32,6 +34,23 @@ const RepairSection = () => {
   const [stockList, getStockList] = useState([]);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [stockData, setStockData] = useState(null);
+  const [showCreateStockModal, setShowCreateStockModal] = useState(false);
+
+  const refreshStockList = async () => {
+    try {
+      const res = await repairPageAllList();
+      getStockList(res.stockStatusList);
+    } catch (e) {
+      console.error("재고 갱신 실패");
+    }
+  };
+
+  const openStockModal = (stock) => {
+    setStockData({ stock });
+  };
+
+  const closeModal = () => setStockData(null);
 
   // API 호출
   useEffect(() => {
@@ -62,10 +81,6 @@ const RepairSection = () => {
   const handleCompleteWork = () => {
     if (!repairList) return alert("현재 작업중인 차량이 없습니다.");
     setShowReportModal(true);
-  };
-
-  const handleViewDetails = () => {
-    setShowHistoryModal(true); // 버튼 클릭 시 모달 열림
   };
 
   const handleReportSubmit = async (reportData) => {
@@ -220,9 +235,22 @@ const RepairSection = () => {
           <div className="stockStatus-box">
             <div className="stockStatus-header">
               <h3>부품 재고 현황</h3>
-              <span className="outOfStock">
-                {/* {parts.filter((p) => p.stock < p.minStock).length}개 항목 재고 부족 */}
-              </span>
+              <div className="stockHeader-right">
+                <span className="outOfStock">
+                  {
+                    stockList.filter(
+                      (stock) => stock.stockQuantity < stock.minStockQuantity
+                    ).length
+                  }
+                  개 항목 재고 부족
+                </span>
+                <button
+                  className="createStock"
+                  onClick={() => setShowCreateStockModal(true)}
+                >
+                  재고 추가
+                </button>
+              </div>
             </div>
           </div>
 
@@ -239,20 +267,52 @@ const RepairSection = () => {
                   <th className="stock-category text-center">작업</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stock-table-body">
                 {stockList.map((res) => (
-                  <tr key={res.inventoryId}>
-                    <td>{res.productName}</td>
-                    <td>{res.stockCategory}</td>
-                    <td>
+                  <tr key={res.inventoryId} className="stock-list-tr">
+                    <td className="stock-list-td">
+                      <span className="stock-product-name">
+                        {res.productName}
+                      </span>
+                    </td>
+                    <td className="stock-list-td">
+                      <span className="stock-category">
+                        {res.stockCategory}
+                      </span>
+                    </td>
+                    <td className="stock-list-td text-center">
                       {res.stockQuantity}
                       {res.stockUnits === "EA" ? "개" : "L"}
                     </td>
-                    <td>
+                    <td className="stock-list-td text-center minColor">
                       {res.minStockQuantity}
                       {res.stockUnits === "EA" ? "개" : "L"}
                     </td>
-                    <td></td>
+                    <td className="stock-list-td">
+                      <div className="stockStatus">
+                        {(() => {
+                          if (res.stockQuantity < res.minStockQuantity) {
+                            return <span className="warnStatus">재고부족</span>;
+                          }
+
+                          if (res.stockQuantity < res.minStockQuantity * 1.3) {
+                            return <span className="careStatus">주의</span>;
+                          }
+
+                          return <span className="normalStatus">정상</span>;
+                        })()}
+                      </div>
+                    </td>
+                    <td className="stock-list-td">
+                      <div className="stockDetail-box">
+                        <button
+                          onClick={() => openStockModal(res)}
+                          className="stock-detail-button"
+                        >
+                          상세보기
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -260,6 +320,7 @@ const RepairSection = () => {
           </div>
         </div>
       </div>
+      {/* 정비완료 모달 */}
       {showReportModal && (
         <RepairReportModal
           onClose={() => setShowReportModal(false)}
@@ -267,12 +328,29 @@ const RepairSection = () => {
           data={repairList}
         />
       )}
+      {/* 정비내역 보기 모달 */}
       {showHistoryModal && (
         <RepairHistoryModal
           onClose={() => setShowHistoryModal(false)} // 모달 닫기
           data={repairList.filter(
             (rep) => rep.carStateNodeId === CAR_STATE.REPAIRING
           )} // 현재 작업 차량 데이터 전달
+        />
+      )}
+      {/* 재고id별 상세보기 모달 */}
+      {stockData && (
+        <StockModal
+          key={stockData.stock.inventoryId}
+          onClose={closeModal}
+          data={stockData.stock}
+          refreshStockList={refreshStockList}
+        />
+      )}
+      {/* 재고 추가 모달 */}
+      {showCreateStockModal && (
+        <StockCreateModal
+          onClose={() => setShowCreateStockModal(false)}
+          refreshStockList={refreshStockList}
         />
       )}
     </div>

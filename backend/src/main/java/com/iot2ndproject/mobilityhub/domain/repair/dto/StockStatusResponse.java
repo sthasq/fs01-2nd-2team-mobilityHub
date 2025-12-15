@@ -21,6 +21,7 @@ public class StockStatusResponse {
     private int minStockQuantity;
     private LocalDateTime updateTime;
     private String sectorId;
+    private int stockPrice;
 
     public StockStatusResponse(StockStatusEntity entity) {
         this.inventoryId = entity.getInventoryId();
@@ -30,6 +31,7 @@ public class StockStatusResponse {
         this.stockQuantity = entity.getStockQuantity();
         this.minStockQuantity = entity.getMinStockQuantity();
         this.updateTime = entity.getUpdateTime();
+        this.stockPrice = entity.getStockPrice();
 
         // 연관 엔티티 → 값만 추출
         if (entity.getSectorId() != null) {

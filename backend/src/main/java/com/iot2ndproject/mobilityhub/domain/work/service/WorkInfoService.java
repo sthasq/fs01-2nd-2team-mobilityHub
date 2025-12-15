@@ -2,6 +2,7 @@ package com.iot2ndproject.mobilityhub.domain.work.service;
 
 import com.iot2ndproject.mobilityhub.domain.work.dao.WorkInfoDAO;
 import com.iot2ndproject.mobilityhub.domain.work.dto.WorkInfoResponseDTO;
+<<<<<<< HEAD
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.domain.work.repository.WorkRepository;
 import com.iot2ndproject.mobilityhub.domain.work.repository.WorksearchRepository;
@@ -9,27 +10,27 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+=======
+>>>>>>> ba4d05fb4ea75b218349f4570ef0ce005222a2a2
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
-public class WorkInfoService {
+public interface WorkInfoService {
 
+<<<<<<< HEAD
     private final WorksearchRepository worksearchRepository;
     @Autowired
     private WorkInfoDAO dao;
     private final ModelMapper modelMapper;
+=======
+    // ✔ 금일 입차
+    List<WorkInfoResponseDTO> getTodayEntryDTO();
+>>>>>>> ba4d05fb4ea75b218349f4570ef0ce005222a2a2
 
-    // ✔ 금일 입차 조회
-    public List<WorkInfoResponseDTO> getTodayEntryDTO() {
-        LocalDate today = LocalDate.now();
-        LocalDateTime start = today.atStartOfDay();
-        LocalDateTime end = today.plusDays(1).atStartOfDay();
+    // ✔ 금일 출차
+    List<WorkInfoResponseDTO> getTodayExitDTO();
 
+<<<<<<< HEAD
         return worksearchRepository
                 .findByEntryTimeBetween(start, end)
                 .stream()
@@ -92,4 +93,8 @@ public class WorkInfoService {
 
 
     }
+=======
+    // ✔ 번호판 수정
+    void updatePlateNumber(Long workInfoId, String newCarNumber);
+>>>>>>> ba4d05fb4ea75b218349f4570ef0ce005222a2a2
 }

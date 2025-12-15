@@ -10,7 +10,7 @@ public class WorkInfoResponseDTO {
     private int workId;
     private String workType;
     private String carNumber;     // 차량 번호
-    private String carState;      // 상태
+
     private LocalDateTime entryTime;
     private LocalDateTime exitTime;
 

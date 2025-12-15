@@ -1,44 +1,45 @@
+import { useState } from "react";
+import axios from "axios";
 import "../style/LicenseModal.css";
 
-export default function LicenseModal({ onClose, data }) {
+const API_BASE = "http://localhost:9000";
+
+export default function LicenseModal({ data, onClose, onSuccess }) {
+  const [plate, setPlate] = useState(data?.carNumber || "");
+
+  const submit = async () => {
+    try {
+      await axios.put(`${API_BASE}/entrance/plate`, {
+        workId: data.workId,
+        carNumber: plate,
+      });
+      onSuccess();
+      onClose();
+    } catch (e) {
+      alert("번호판 수정 실패");
+    }
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-box">
-        <div className="modal-header">
-          <h2>차량 번호판 확인</h2>
-          <p>{data.time}</p>
-          <button className="close-btn" onClick={onClose}>
-            ✕
+        <h2>번호판 수정</h2>
+
+        <input
+          className="modal-input"
+          value={plate}
+          onChange={(e) => setPlate(e.target.value)}
+          placeholder="차량 번호 입력"
+        />
+
+        <div className="modal-actions">
+          <button className="btn-cancel" onClick={onClose}>
+            취소
+          </button>
+          <button className="btn-save" onClick={submit}>
+            저장
           </button>
         </div>
-
-        <div className="modal-image">
-          <img src={data.image} alt="번호판 이미지" />
-        </div>
-
-        <div className="modal-section">
-          <p className="label">인식된 번호판</p>
-          <div className="number-edit">
-            <input value={data.plate} readOnly />
-            <button className="edit-btn">수정</button>
-          </div>
-        </div>
-
-        <div className="modal-info-box">
-          <div>
-            <p className="info-label">출입 유형</p>
-            <p className="info-value">{data.type}</p>
-          </div>
-
-          <div>
-            <p className="info-label">시간</p>
-            <p className="info-value">{data.time}</p>
-          </div>
-        </div>
-
-        <button className="modal-close-footer" onClick={onClose}>
-          닫기
-        </button>
       </div>
     </div>
   );

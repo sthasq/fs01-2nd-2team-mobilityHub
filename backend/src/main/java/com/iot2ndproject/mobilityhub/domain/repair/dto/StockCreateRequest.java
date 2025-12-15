@@ -14,6 +14,7 @@ public class StockCreateRequest {
     private String productName;
     private String stockCategory;
     private int stockQuantity;
+    private int minStockQuantity;
     private int stockPrice;
     private String stockUnits;
 }

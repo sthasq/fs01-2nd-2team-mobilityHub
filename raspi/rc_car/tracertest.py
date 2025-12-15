@@ -107,7 +107,7 @@ def read_line_sensors():
     center = GPIO.input(LS_CENTER)
     right  = GPIO.input(LS_RIGHT)
             # 디버깅용
-    print(f"L={left}, C={center}, R={right}")
+    # print(f"L={left}, C={center}, R={right}")
     return left, center, right
 
 
