@@ -1,58 +1,57 @@
+import { useState, useEffect } from "react";
 import { User, Mail, Phone, Shield } from "lucide-react";
 import "../style/AdminSection.css";
+import axios from "axios";
 
 export default function AdminSection() {
-  const allAdmins = [
-    {
-      id: "1",
-      adminId: "admin001",
-      name: "관리자",
-      area: "전체",
-      phone: "010-1234-5678",
-      email: "admin@smartpark.com",
-      isCurrentUser: true,
-    },
-    {
-      id: "2",
-      adminId: "admin002",
-      name: "김입구",
-      area: "입출구",
-      phone: "010-2345-6789",
-      email: "entrance@smartpark.com",
-    },
-    {
-      id: "3",
-      adminId: "admin003",
-      name: "이세차",
-      area: "세차장",
-      phone: "010-3456-7890",
-      email: "carwash@smartpark.com",
-    },
-    {
-      id: "4",
-      adminId: "admin004",
-      name: "박정비",
-      area: "정비존",
-      phone: "010-4567-8901",
-      email: "maintenance@smartpark.com",
-    },
-    {
-      id: "5",
-      adminId: "admin005",
-      name: "최주차",
-      area: "주차장",
-      phone: "010-5678-9012",
-      email: "parking@smartpark.com",
-    },
-    {
-      id: "6",
-      adminId: "admin006",
-      name: "정통계",
-      area: "통계 분석",
-      phone: "010-6789-0123",
-      email: "stats@smartpark.com",
-    },
-  ];
+  const [allAdmins, setAllAdmins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 백엔드에서 관리자 목록 조회
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      try {
+        const response = await axios.get("http://localhost:9000/admin/list");
+        
+        // DB 데이터를 화면에 맞게 변환
+        const admins = response.data.map((admin) => ({
+          id: admin.adminId,
+          adminId: admin.adminId,
+          name: admin.adminName,
+          area: getAreaFromAdminId(admin.adminId),
+          phone: "010-0000-0000",
+          email: `${admin.adminId}@smartpark.com`,
+          isCurrentUser: admin.adminId === "Padmin"
+        }));
+        
+        setAllAdmins(admins);
+        setLoading(false);
+      } catch (err) {
+        console.error("관리자 목록 조회 실패:", err);
+        setError("데이터를 불러올 수 없습니다.");
+        setLoading(false);
+      }
+    };
+
+    fetchAdmins();
+  }, []);
+
+  // 관리자 ID로 구역 판단
+  const getAreaFromAdminId = (adminId) => {
+    switch (adminId) {
+      case "Padmin":
+        return "주차장";
+      case "Radmin":
+        return "정비소";
+      case "Tadmin":
+        return "전체";
+      case "Wadmin":
+        return "세차장";
+      default:
+        return "기타";
+    }
+  };
 
   const getAreaClass = (area) => {
     switch (area) {
@@ -62,7 +61,7 @@ export default function AdminSection() {
         return "tag blue";
       case "세차장":
         return "tag green";
-      case "정비존":
+      case "정비소":
         return "tag orange";
       case "주차장":
         return "tag indigo";
@@ -72,6 +71,9 @@ export default function AdminSection() {
         return "tag gray";
     }
   };
+
+  if (loading) return <div className="admin-wrapper"><div className="admin-box"><p>로딩 중...</p></div></div>;
+  if (error) return <div className="admin-wrapper"><div className="admin-box"><p>{error}</p></div></div>;
 
   return (
     <div className="admin-wrapper">
