@@ -2,7 +2,8 @@ import React from "react";
 import backendServer from "./backendServer";
 import request from "./requests";
 
-const repairPageAllList = async () => {
+// 재고&차량내용 전체리스트
+export const repairPageAllList = async () => {
   try {
     const response = await backendServer.get(request.repairAll);
 
@@ -13,7 +14,8 @@ const repairPageAllList = async () => {
   }
 };
 
-const reportAllList = async () => {
+// 보고서 리스트
+export const reportAllList = async () => {
   try {
     const response = await backendServer.get(request.reportList);
 
@@ -24,7 +26,8 @@ const reportAllList = async () => {
   }
 };
 
-const createStock = async (stockData) => {
+// 재고
+export const createStock = async (stockData) => {
   try {
     const response = await backendServer.post(request.createStock, stockData);
 
@@ -35,7 +38,8 @@ const createStock = async (stockData) => {
   }
 };
 
-const updateStock = async (updateStockData) => {
+// 재고 내용 변경
+export const updateStock = async (updateStockData) => {
   try {
     const response = await backendServer.post(
       request.updateStock,
@@ -48,7 +52,8 @@ const updateStock = async (updateStockData) => {
   }
 };
 
-const deleteStock = async (inventoryId) => {
+// 재고 삭제
+export const deleteStock = async (inventoryId) => {
   try {
     const response = await backendServer.delete(request.deleteStock, {
       params: { inventoryId },
@@ -60,10 +65,48 @@ const deleteStock = async (inventoryId) => {
   }
 };
 
-export {
-  repairPageAllList,
-  reportAllList,
-  updateStock,
-  deleteStock,
-  createStock,
+// 보고서 작성
+export const writeReport = async (reportData) => {
+  try {
+    const response = await backendServer.post(request.writeReport, reportData);
+
+    return response;
+  } catch (error) {
+    console.error("에러발생: ", error);
+    alert("보고서 작성도중 에러가 발생했습니다.");
+  }
+};
+
+// 작업완료 rc카에 보내기
+export const sendComplete = async (workInfoId) => {
+  try{
+    const response = await backendServer.post(request.sendRepairComplete, workInfoId);
+
+    return response;
+  }catch (error){
+    console.error("작업완료 에러발생: ", error)
+    alert("작업완료 전송 중 에러가 발생했습니다.")
+  }
+} 
+
+// 월별 금액
+export const getRepairAmount = async () => {
+  try {
+    const response = await backendServer.get(`${request.repairAmount}`);
+    return response;
+  } catch (error) {
+    console.error("월별금액을 조회 중 에러가 발생: ", error);
+  }
+};
+
+// 관리자 리스트
+export const getAdminList = async () => {
+  try {
+    const respone = await backendServer.get(request.adminList);
+
+    return respone.data;
+  } catch (error) {
+    console.error("에러발생: ", error);
+    return null;
+  }
 };

@@ -1,8 +1,101 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../style/StatisticsSection.css";
+import { getRepairAmount } from "../../api/repairAPI";
+import UseByArea from "../chart/UseByArea";
+import { getWorkInfoList } from "../../api/workInfoAPI";
+import StatisticsByDateChart from "../chart/StatisticsByDateChart";
 
 export default function StatisticsSection() {
+  // 기간 상태
   const [periodType, setPeriodType] = useState("daily");
+  const [repairAmount, setRepairAmount] = useState([]);
+
+  // 작업 목록 가져오기
+  const [workList, setWorkList] = useState([]);
+
+  useEffect(() => {
+    getRepairAmount()
+      .then((res) => {
+        setRepairAmount(res.data);
+      })
+      .catch((err) => console.error("월별 금액 조회중 오류 발생", err));
+  }, []);
+
+  useEffect(() => {
+    getWorkInfoList()
+      .then((res) => {
+        setWorkList(res);
+      })
+      .catch((err) => console.log("작업 목록 가져오기 실패: ", err));
+  }, []);
+
+  // 일별 통계
+  const dailyData = workList.reduce((acc, item) => {
+    if (!item.entryTime) return acc;
+    const hour = new Date(item.entryTime).getHours();
+    acc[hour] = (acc[hour] || 0) + 1;
+    return acc;
+  }, {});
+
+  // 배열로 변환
+  const dailyArray = [];
+  for (let hour = 0; hour < 24; hour++) {
+    dailyArray.push({ time: `${hour}:00`, count: dailyData[hour] || 0 });
+  }
+
+  // 월별 통계
+  const monthlyData = workList.reduce((acc, item) => {
+    if (!item.entryTime) return acc;
+    const day = new Date(item.entryTime).getDate();
+    const week = Math.ceil(day / 7); // 1~4주
+    acc[week] = (acc[week] || 0) + 1;
+    return acc;
+  }, {});
+
+  const monthlyArray = [];
+  for (let week = 1; week <= 4; week++) {
+    monthlyArray.push({ day: `${week}주`, count: monthlyData[week] || 0 });
+  }
+
+  // 연별 통계
+  const yearlyData = workList.reduce((acc, item) => {
+    if (!item.entryTime) return acc;
+    const month = new Date(item.entryTime).getMonth() + 1; // 0~11 → 1~12
+    acc[month] = (acc[month] || 0) + 1;
+    return acc;
+  }, {});
+
+  const yearlyArray = [];
+  for (let month = 1; month <= 12; month++) {
+    yearlyArray.push({ month: `${month}월`, count: yearlyData[month] || 0 });
+  }
+
+  // 현재 선택한 기간의 데이터 반환
+  const getCurrentData = () => {
+    if (periodType === "daily") return dailyArray;
+    if (periodType === "monthly") return monthlyArray;
+    if (periodType === "yearly") return yearlyArray;
+    return dailyArray;
+  };
+
+  // X축 key 선택
+  const getXAxisKey = () => {
+    if (periodType === "daily") return "time";
+    if (periodType === "monthly") return "day";
+    if (periodType === "yearly") return "month";
+    return "time";
+  };
+
+  // 차트 제목
+  const getPeriodLabel = () => {
+    if (periodType === "daily") return "일별 이용량";
+    if (periodType === "monthly") return "월별 이용량";
+    if (periodType === "yearly") return "연별 이용량";
+    return "이용량";
+  };
+
+  console.log("금액: ", repairAmount);
+  const total = (repairAmount || []).reduce((sum, r) => sum + r.repairAmount, 0);
 
   return (
     <div className="statistics-page">
@@ -14,8 +107,8 @@ export default function StatisticsSection() {
         </div>
 
         <div className="summary-card">
-          <p className="summary-title">이번 달 이용량</p>
-          <p className="summary-value">이용량</p>
+          <p className="summary-title">이번 달 매출</p>
+          <p className="summary-value">{total.toLocaleString("ko-KR")}</p>
         </div>
 
         <div className="summary-card">
@@ -25,84 +118,49 @@ export default function StatisticsSection() {
       </div>
 
       {/* ------------------------ 중단: 그래프 2개 ------------------------ */}
-      <div className="chart-row">
+      <div className="chart-container">
         <div className="chart-box">
-          <h3 className="chart-title">금일 집계 (시간대별 입출차)</h3>
-          <div className="chart-placeholder">여기에 선 그래프 들어갈 자리</div>
+          <div className="use-area">
+            <h3 className="use-area-chart-title">{getPeriodLabel()} 통계</h3>
+            <div className="use-area-chart">
+              <button
+                onClick={() => setPeriodType("daily")}
+                className={`px-4 py-2 rounded-lg ${
+                  periodType === "daily" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                일별
+              </button>
+              <button
+                onClick={() => setPeriodType("monthly")}
+                className={`px-4 py-2 rounded-lg ${
+                  periodType === "monthly" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                월별
+              </button>
+              <button
+                onClick={() => setPeriodType("yearly")}
+                className={`px-4 py-2 rounded-lg ${
+                  periodType === "yearly" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                연별
+              </button>
+            </div>
+          </div>
         </div>
+        <div className="line-chart">
+          <StatisticsByDateChart data={getCurrentData()} xKey={getXAxisKey()} />
+        </div>
+      </div>
 
-        <div className="chart-box">
-          <h3 className="chart-title">금일 이용회원 (구역별)</h3>
-          <div className="chart-placeholder">여기에 막대 그래프 들어갈 자리</div>
-        </div>
+      <div className="chart-box">
+        <h3 className="chart-title">금일 이용회원 (구역별)</h3>
+        <div className="chart-placeholder">여기에 막대 그래프 들어갈 자리</div>
       </div>
 
       {/* ------------------------ 하단 영역 ------------------------ */}
-      <div className="bottom-row">
-        {/* 좌측 테이블 */}
-        <div className="parking-list">
-          <div className="parking-title-box">
-            <h3 className="parking-title">현재 주차장 차량 목록</h3>
-            <span className="parking-count">총 3대 주차중</span>
-          </div>
-
-          <table className="parking-table">
-            <thead>
-              <tr>
-                <th>차량번호</th>
-                <th>주차 위치</th>
-                <th>입차 시간</th>
-                <th>주차 시간</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td>차량번호</td>
-                <td>주차위치</td>
-                <td>입차 시간</td>
-                <td>주차 시간</td>
-              </tr>
-
-              <tr className="parking-list">
-                <td>차량번호</td>
-                <td>주차위치</td>
-                <td>입차 시간</td>
-                <td>주차 시간</td>
-              </tr>
-
-              <tr className="parking-list">
-                <td>차량번호</td>
-                <td>주차위치</td>
-                <td>입차 시간</td>
-                <td>주차 시간</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* 우측 날씨 + 센서 */}
-        <div className="weather-info-box">
-          <p className="weather-date-title">오늘 날짜</p>
-          <p className="weather-date">2025년 12월 8일 월요일</p>
-
-          <div className="weather-box">
-            <span className="weather-icon">🌧</span>
-            <span className="weather-text">비</span>
-          </div>
-
-          <div className="water-box">
-            <p className="water-title">물 수위 센서 시스템</p>
-
-            <div className="water-status">
-              <span className="indicator"></span>
-              <span className="state-text">ON</span>
-            </div>
-
-            <p className="water-message">비가 내리고 있어 센서가 활성화되었습니다.</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

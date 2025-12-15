@@ -8,7 +8,8 @@ import useMqtt from "../hook/useMqtt";
 const CAMERA_STREAM_URL = "http://192.168.14.125:5000/video_feed";
 
 export default function ParkingSection() {
-  const BROKER_URL = import.meta.env.VITE_BROKER_URL || "ws://localhost:8080/mqtt";
+  const BROKER_URL =
+    import.meta.env.VITE_BROKER_URL || "ws://localhost:8080/mqtt";
   console.log("브로커:", BROKER_URL);
 
   // 상태 관리
@@ -54,7 +55,9 @@ export default function ParkingSection() {
       }
 
       // DB 데이터로 화면 업데이트 (P로 시작하는 주차면만 필터링)
-      const parkingData = data.filter((item) => item.sectorId && item.sectorId.startsWith("P"));
+      const parkingData = data.filter(
+        (item) => item.sectorId && item.sectorId.startsWith("P")
+      );
       updateParkingDisplay(parkingData);
       setError(null);
       setLoading(false);
@@ -80,7 +83,8 @@ export default function ParkingSection() {
     const totalSpots = data.length;
     const occupiedSpots = data.filter((spot) => spot.state !== "empty").length;
     const availableSpots = totalSpots - occupiedSpots;
-    const occupancyRate = totalSpots > 0 ? Math.round((occupiedSpots / totalSpots) * 100) : 0;
+    const occupancyRate =
+      totalSpots > 0 ? Math.round((occupiedSpots / totalSpots) * 100) : 0;
 
     setStats({
       totalSpots,
@@ -110,7 +114,9 @@ export default function ParkingSection() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500">전체 주차면</p>
-              <p className="text-gray-900 text-2xl font-semibold mt-2">{stats.totalSpots}면</p>
+              <p className="text-gray-900 text-2xl font-semibold mt-2">
+                {stats.totalSpots}면
+              </p>
             </div>
             <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
               <Car className="w-6 h-6 text-gray-600" />
@@ -123,7 +129,9 @@ export default function ParkingSection() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500">사용중</p>
-              <p className="text-red-600 text-2xl font-semibold mt-2">{stats.occupiedSpots}대</p>
+              <p className="text-red-600 text-2xl font-semibold mt-2">
+                {stats.occupiedSpots}대
+              </p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
               <XCircle className="w-6 h-6 text-red-600" />
@@ -136,7 +144,9 @@ export default function ParkingSection() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500">사용가능</p>
-              <p className="text-green-600 text-2xl font-semibold mt-2">{stats.availableSpots}면</p>
+              <p className="text-green-600 text-2xl font-semibold mt-2">
+                {stats.availableSpots}면
+              </p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="w-6 h-6 text-green-600" />
@@ -149,7 +159,9 @@ export default function ParkingSection() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500">점유율</p>
-              <p className="text-blue-600 text-2xl font-semibold mt-2">{stats.occupancyRate}%</p>
+              <p className="text-blue-600 text-2xl font-semibold mt-2">
+                {stats.occupancyRate}%
+              </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
               <Car className="w-6 h-6 text-blue-600" />
@@ -199,12 +211,16 @@ export default function ParkingSection() {
                     <div className="parking-spot-info">
                       <Car
                         className={`spot-icon ${
-                          spot.statusColor === "green" ? "text-green-600" : "text-red-600"
+                          spot.statusColor === "green"
+                            ? "text-green-600"
+                            : "text-red-600"
                         }`}
                       />
                       <span
                         className={`spot-number ${
-                          spot.statusColor === "green" ? "text-green-900" : "text-red-900"
+                          spot.statusColor === "green"
+                            ? "text-green-900"
+                            : "text-red-900"
                         }`}
                       >
                         {spot.spotNumber}
@@ -223,7 +239,9 @@ export default function ParkingSection() {
                   </div>
 
                   {/* 사용 가능 메시지 */}
-                  {spot.statusColor === "green" && <p className="available-message">주차 가능</p>}
+                  {spot.statusColor === "green" && (
+                    <p className="available-message">주차 가능</p>
+                  )}
                 </div>
               ))
             )}

@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "../style/RepairSection.css";
 import useMqtt from "../hook/useMqtt";
-import { repairPageAllList } from "../../api/repairAPI";
+import {
+  repairPageAllList,
+  reportAllList,
+  writeReport,
+  sendComplete,
+} from "../../api/repairAPI";
 import { Check } from "lucide-react";
-import axios from "axios";
 import RepairReportModal from "../modal/RepairReportModal";
 import RepairHistoryModal from "../modal/RepairHistoryModal";
 import StockModal from "../modal/StockModal";
@@ -11,23 +15,8 @@ import StockCreateModal from "../modal/StockCreateModal";
 
 //const BROKER_URL = import.meta.env.VITE_BROKER_URL;
 // MQTT 브로커 주소 --> cctv 연결할 때
+const BROKER_URL = "ws://192.168.14.39:9001";
 //const BROKER_URL = "ws://192.168.45.84";
-
-// 차량 상태 상수
-const CAR_STATE = {
-  REPAIRING: 13,
-  WAIT_1: 1,
-  WAIT_2: 2,
-  WAIT_3: 0,
-};
-
-// 상태별 정보 매핑
-const CAR_STATE_INFO = {
-  [CAR_STATE.WASHING]: { label: "진행중", color: "ing" },
-  [CAR_STATE.WAIT_1]: { label: "대기중", color: "wait" },
-  [CAR_STATE.WAIT_2]: { label: "대기중", color: "wait" },
-  [CAR_STATE.WAIT_3]: { label: "완료", color: "finish" },
-};
 
 const RepairSection = () => {
   const [repairList, getRepairList] = useState([]);
@@ -35,7 +24,10 @@ const RepairSection = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [stockData, setStockData] = useState(null);
+  const [reportList, setReportList] = useState([]);
   const [showCreateStockModal, setShowCreateStockModal] = useState(false);
+  const { connectStatus, imageSrc, publish, message } = useMqtt(BROKER_URL);
+  const [liftStatus, setLiftStatus] = useState("대기");
 
   const refreshStockList = async () => {
     try {
@@ -54,53 +46,133 @@ const RepairSection = () => {
 
   // API 호출
   useEffect(() => {
+    if (connectStatus === "connected") {
+      publish("parking/web/repair/cam", "start");
+    }
     repairPageAllList()
       .then((res) => {
         getRepairList(res.repairList);
         getStockList(res.stockStatusList);
       })
       .catch((err) => console.error("차량 정보 조회 실패"));
-  }, []);
+
+    reportAllList()
+      .then((res) => {
+        setReportList(res);
+      })
+      .catch((err) => console.error("보고서 조회 실패"));
+  }, [connectStatus, publish]);
 
   console.log(repairList);
   console.log(stockList);
+  console.log(reportList);
 
   // 현재 작업 중인 차량
-  const workingCar = repairList.find(
-    (repair) => repair.carState === CAR_STATE.REPAIRING
-  );
+  const workingCar = repairList.filter((repair) => repair.carState === 13);
 
   // 대기 중인 차량
-  const waitForWark = repairList.find(
+  const waitForWark = repairList.filter(
     (repair) =>
-      repair.carState !== CAR_STATE.REPAIRING &&
-      repair.entryTime == null &&
-      repair.exitTime == null
-  );
+      repair.carState !== 13 &&
+      repair.exit_time == null &&
+      (repair.entry_time == null || repair.carState == null) &&
+      (repair.entry_time !== null ||
+        repair.carState == 1 ||
+        repair.carState == 2 ||
+        repair.carState == 12)
+  ).length;
 
   const handleCompleteWork = () => {
     if (!repairList) return alert("현재 작업중인 차량이 없습니다.");
     setShowReportModal(true);
   };
 
+  useEffect(() => {
+    if (connectStatus !== "connected") return;
+
+    // lift 토픽 구독
+    publish("parking/web/repair/lift", "status"); // 초기 상태 요청용(선택)
+  }, [connectStatus, publish]);
+
+  // useEffect(() => {
+  //   if (!message) return;
+
+  //   if (message.topic === "parking/web/repair/lift") {
+  //     if (message.payload === "up") {
+  //       setLiftStatus("상승중");
+  //     } else if (message.payload === "down") {
+  //       setLiftStatus("하강중");
+  //     }
+  //   }
+  // }, [message]);
+
   const handleReportSubmit = async (reportData) => {
     console.log("DB에 저장될 데이터: ", reportData);
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:9000/report/write",
-        reportData
-      );
+      const response = await writeReport(reportData);
 
       if (response.status === 200) {
-        console.log("서버응당: ", response.data);
         alert("보고서작성이 등록됐습니다.");
+        
+        // 보고서 작성 성공 후 작업 완료 신호 전송
+        if (reportData.workInfoId) {
+          const completeResponse = await sendComplete({ workInfoId: reportData.workInfoId });
+          if (completeResponse?.status === 200) {
+            console.log("작업 완료 신호 전송 성공");
+          }
+        }
       }
+      return response;
     } catch (error) {
       console.error("에러발생: ", error);
       alert("보고서 등록 중 오류가 발생했습니다.");
     }
   };
+
+  // 오늘 날짜 문자열
+  const today = new Date();
+  const yyyy = today.getFullYear().toString();
+  const mm = (today.getMonth() + 1).toString().padStart(2, "0");
+  const dd = today.getDate().toString().padStart(2, "0");
+  const todayStr = yyyy + mm + dd; // yyyymmdd
+
+  // 렌더링할 리스트 필터링 및 상태 결정
+  const filteredRepairList = repairList
+    .map((list) => {
+      // 이미 출차된 차량 제외
+      if (list.exit_time) return null;
+
+      // 오늘 완료된 차량 제외
+      const hasReportToday = reportList.some(
+        (report) =>
+          report.reportId.startsWith(todayStr) &&
+          report.carNumber === list.car_number
+      );
+      if (hasReportToday) return null;
+
+      // 차량 상태 결정
+      let carStateText = "";
+      if (list.carState === 13) {
+        carStateText = "작업중";
+      } else if (
+        (list.carState === null && list.entry_time == null) ||
+        ((list.carState === 0 ||
+          list.carState === 1 ||
+          list.carState === 2 ||
+          list.carState === 12) &&
+          list.entry_time !== null)
+      ) {
+        carStateText = "대기중";
+      } else {
+        return null; // 제외
+      }
+
+      return { ...list, carStateText }; // 상태를 추가해서 반환
+    })
+    .filter(Boolean); // null 제거
+
+  console.log(filteredRepairList);
 
   return (
     <div className="main-page">
@@ -114,7 +186,9 @@ const RepairSection = () => {
             <div>
               <p className="working-info">현재 작업차량</p>
               <p className="info-details insert">
-                {workingCar ? workingCar.car_number : "작업중인 차량 없음"}
+                {workingCar.length > 0
+                  ? workingCar[0].car_number
+                  : "작업중인 차량 없음"}
               </p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#dbeafe" }}>
@@ -132,7 +206,7 @@ const RepairSection = () => {
               </p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#fef9c3" }}>
-              {/* icon 들어갈 자리, class=icon color:#ca8a04 */}
+              icon 들어갈 자리, class=icon color:#ca8a04
             </div>
           </div>
         </div>
@@ -141,10 +215,24 @@ const RepairSection = () => {
           <div className="between-position">
             <div>
               <p className="working-info">리프트 상태</p>
-              <p className="info-details insert">(리프트상태)</p>
+              <p className="info-details insert">{liftStatus}</p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#fee2e2" }}>
               {/* icon 들어갈 자리, class=icon color:#dc2626 */}
+              <div className="lift-btn-wrapper">
+                <button
+                  className="lift-btn up"
+                  onClick={() => publish("parking/web/repair/lift", "up")}
+                >
+                  ▲
+                </button>
+                <button
+                  className="lift-btn down"
+                  onClick={() => publish("parking/web/repair/lift", "down")}
+                >
+                  ▼
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -154,7 +242,7 @@ const RepairSection = () => {
       <div className="usage-status-container">
         {/* CCTV부분 */}
         <div className="repair-cctv">
-          <div className="insert">cctv추가</div>
+          <img src={imageSrc || null} alt="camera" className="cctv-view" />
         </div>
         {/* 이용 현황 패널 */}
         <div className="use-status-box">
@@ -162,19 +250,22 @@ const RepairSection = () => {
             <h3>이용 현황</h3>
           </div>
           <div className="status-box">
-            {repairList.map((list) => (
-              <div key={list.id} className="list-data">
-                <div>
-                  <div className="car-number">{list.car_number}</div>
-                  <span className="state"></span>
+            {filteredRepairList.length > 0 ? (
+              filteredRepairList.map((list) => (
+                <div key={list.id} className="list-data">
+                  <div>
+                    <div className="car-number">
+                      <span className="state">{list.car_number}</span>
+                    </div>
+                  </div>
+                  <span className="job-state">
+                    <p>{list.carStateText}</p>
+                  </span>
                 </div>
-                <span className="job-state">
-                  <p className={CAR_STATE_INFO[list.carState]?.color || ""}>
-                    {CAR_STATE_INFO[list.carState]?.label || ""}
-                  </p>
-                </span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>현재 작업대기 중인 차량이 없습니다.</p>
+            )}
           </div>
         </div>
       </div>
@@ -194,21 +285,16 @@ const RepairSection = () => {
           </div>
 
           {/* 카드 본문: 현재 작업 차량 추가 요청사항 */}
-          {repairList.filter(
-            (rep) => rep.carStateNodeId === CAR_STATE.REPAIRING
-          ).length > 0 ? (
+          {repairList.filter((rep) => rep.carState === 13).length > 0 ? (
             repairList
-              .filter((rep) => rep.carStateNodeId === CAR_STATE.REPAIRING)
+              .filter((rep) => rep.carState === 13)
               .map((rep) => (
                 <div key={rep.id} className="repair-list">
                   <p className="add-repair">추가 요청사항</p>
-                  {rep.additionalRequests &&
-                  rep.additionalRequests.length > 0 ? (
-                    rep.additionalRequests.map((req, index) => (
-                      <div key={index} className="repair-request">
-                        {req}
-                      </div>
-                    ))
+                  {rep.additionalRequest && rep.additionalRequest.length > 0 ? (
+                    <div key={rep.id} className="repair-request">
+                      {rep.additionalRequest}
+                    </div>
                   ) : (
                     <p className="no-request">요청사항 없음</p>
                   )}
@@ -255,7 +341,7 @@ const RepairSection = () => {
           </div>
 
           {/* 부품별 재고현황 메인 */}
-          <div style={{ overflowX: "auto" }}>
+          <div className="stock-table-wrapper">
             <table className="stockStatus-table">
               <thead>
                 <tr>
@@ -320,21 +406,18 @@ const RepairSection = () => {
           </div>
         </div>
       </div>
-      {/* 정비완료 모달 */}
+      {/* 정비중 차량 완료 버튼 모달 -> 보고서 표시 */}
       {showReportModal && (
         <RepairReportModal
           onClose={() => setShowReportModal(false)}
           onSubmit={handleReportSubmit}
-          data={repairList}
+          data={repairList.filter((req) => req.carState === 13)}
         />
       )}
-      {/* 정비내역 보기 모달 */}
+      {/* 정비 보고서 전체보기 모달 */}
       {showHistoryModal && (
         <RepairHistoryModal
           onClose={() => setShowHistoryModal(false)} // 모달 닫기
-          data={repairList.filter(
-            (rep) => rep.carStateNodeId === CAR_STATE.REPAIRING
-          )} // 현재 작업 차량 데이터 전달
         />
       )}
       {/* 재고id별 상세보기 모달 */}

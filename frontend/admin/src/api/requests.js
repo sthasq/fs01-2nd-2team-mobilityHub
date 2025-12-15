@@ -1,22 +1,37 @@
 // 백엔드 통신을 위한 path
 
-const request = {
-  carWashing: "/carwash/select",
+import { sendComplete } from "./repairAPI";
 
-  // 입출구 API 추가
+const request = {
+  // 메인
+  workList: "/entrance/work/list",
+  todayWork: "/entrance/work/today",
+  workInfoTotalList: "/entrance/work/totalList",
+
+  // 입출구
   todayEntry: "/entrance/today/entry",
   todayExit: "/entrance/today/exit",
 
-  // 작업 전체 목록
-  workList: "/entrance/work/list",
+  // 주차장
+  parkingList: "/parking/list",
+  parkStatusUpdateList: "/parking/update",
 
-  // 정비소 api
-  // 1) 정비 서비스 차량 모든 조회
+  // 세차장
+  carWashing: "/carwash/select",
+  sendWashComplete : "/carwash/complete",
+  //정비소
   repairAll: "/repair/list",
   reportList: "/repair/report/list",
   createStock: "/repair/create",
   updateStock: "/repair/detail/update",
   deleteStock: "/repair/detail/delete",
+  writeReport: "repair/report/write",
+  sendRepairComplete: "/repair/complete",
+  // 통계
+  repairAmount: "/repair/report/amount",
+
+  // 관리자 조회
+  adminList: "/admin/list",
 };
 
 export default request;

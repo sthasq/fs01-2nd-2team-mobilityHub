@@ -42,4 +42,7 @@ public interface RepairService {
 
     // 보고서 삭제
     void deleteReport(String reportId);
+
+    // 정비 보고서 월별 금액
+    List<ReportResponseDTO> repairAmount();
 }

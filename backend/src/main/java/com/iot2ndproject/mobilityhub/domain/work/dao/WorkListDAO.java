@@ -8,4 +8,7 @@ public interface WorkListDAO {
 
     // 전체목록 조회
     List<WorkInfoEntity> findAll();
+
+    // 오늘 작업목록만 조회
+    List<WorkInfoEntity> findAllToday();
 }

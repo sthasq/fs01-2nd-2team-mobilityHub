@@ -17,4 +17,10 @@ public class WorkListDAOImpl implements WorkListDAO {
         System.out.println("작업목록 조회");
         return repository.findAll();
     }
+
+    @Override
+    public List<WorkInfoEntity> findAllToday() {
+        System.out.println("오늘 작업목록만 조회");
+        return repository.findAll();
+    }
 }

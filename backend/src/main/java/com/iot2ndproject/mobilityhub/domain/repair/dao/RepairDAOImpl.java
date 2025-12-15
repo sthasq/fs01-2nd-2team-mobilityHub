@@ -84,4 +84,9 @@ public class RepairDAOImpl implements RepairDAO {
     public void deleteReport(String reportId) {
         repairReportRepository.deleteByReportId(reportId);
     }
+
+    @Override
+    public List<ReportEntity> repairAmount() {
+        return repairReportRepository.findAll();
+    }
 }

@@ -105,6 +105,12 @@ public class RepairController {
         return ResponseEntity.ok(reportId+"아이디를 가진 보고서가 삭제되었습니다.");
     }
 
+    // 정비 금액 조회
+    @GetMapping("/report/amount")
+    public List<ReportResponseDTO> repairAmount(){
+        return repairService.repairAmount();
+    }
+
     /**
      * 정비 작업 완료 처리
      * @param workInfoId 작업 정보 ID
@@ -112,15 +118,8 @@ public class RepairController {
      */
     @PostMapping("/complete")
     public ResponseEntity<?> completeRepair(@RequestParam Long workInfoId) {
-        try {
             serviceRequestService.completeService(workInfoId, "repair");
-            return ResponseEntity.ok(Map.of("message", "정비 완료"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-        }
+            return ResponseEntity.ok(Map.of("message", "정비 완료 신호 rc카에 전송"));
     }
 
 }
