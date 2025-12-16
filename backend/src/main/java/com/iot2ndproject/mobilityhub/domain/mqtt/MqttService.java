@@ -32,8 +32,8 @@ public class MqttService {
     public void handleMessage(Message<String> message) {
         String payload = message.getPayload();
         String topic = (String) message.getHeaders().get(MqttHeaders.RECEIVED_TOPIC);
-        System.out.println("Received Message: " + payload);
-        System.out.println("Received Topic: " + topic);
+//        System.out.println("Received Message: " + payload);
+//        System.out.println("Received Topic: " + topic);
 
         // rccar/+/position 토픽 처리
         if (topic != null && topic.startsWith("rccar/") && topic.endsWith("/position")) {
@@ -44,6 +44,12 @@ public class MqttService {
         }
         if ("parking/web/entrance/image".equals(topic)) {
             handleEntranceImage(payload);
+            return;
+        }
+
+        if ("parking/web/entrance/capture".equals(topic)) {
+            System.out.println(topic);
+            System.out.println(payload);
             return;
         }
 
@@ -161,25 +167,21 @@ public class MqttService {
 
             String cameraId = (String) data.get("cameraId");
             String imagePath = (String) data.get("imagePath");
-            String ocrNumber = (String) data.get("ocrNumber"); // null 가능
+            String ocrNumber = (String) data.get("ocrNumber");
 
             ImageEntity image = new ImageEntity();
             image.setCameraId(cameraId);
             image.setImagePath(imagePath);
             image.setOcrNumber(ocrNumber);
-            image.setCorrectedOcrNumber(null);
-            // regDate는 @CreationTimestamp로 자동
 
             imageRepository.save(image);
 
             System.out.println("✅ image 테이블 저장 완료");
-            System.out.println("   cameraId=" + cameraId);
-            System.out.println("   imagePath=" + imagePath);
 
         } catch (Exception e) {
-            System.err.println("❌ 입구 이미지 처리 실패");
             e.printStackTrace();
         }
     }
 
 }
+
