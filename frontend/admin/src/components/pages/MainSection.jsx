@@ -7,7 +7,8 @@ import InOutLineChart from "../chart/InOutLineChart";
 import { getTodayWorkList, workInfoTotalList } from "../../api/workInfoAPI";
 import UseByArea from "../chart/UseByArea";
 import MiniCalendar from "../calendar/MiniCalendar";
-import { AlignCenter } from "lucide-react";
+import { AlignCenter, Car } from "lucide-react";
+import { getParkingList } from "../../api/parkingAPI";
 
 const MainSection = () => {
   //날씨
@@ -20,6 +21,9 @@ const MainSection = () => {
   const [workList, setWorkList] = useState([]);
 
   const [workTotalList, setWorkTotalList] = useState([]);
+
+  // 주차 현황 가져오기
+  const [parkingSpace, setParkingSpace] = useState([]);
 
   // 현재 날짜 가져오기
   const currentDate = new Date().toLocaleDateString("ko-KR", {
@@ -70,7 +74,23 @@ const MainSection = () => {
     });
   };
 
-  console.log(workList);
+  console.log("정보", parkingSpace);
+  console.log("주차장: ", workTotalList);
+
+  const sectors = ["P01", "P02", "P03"];
+  const carStateToSector = {
+    5: "P01",
+    7: "P02",
+    9: "P03",
+  };
+
+  // 출차시간이 없으면 carstate값이 5, 7, 9(주차장 칸 번호)가 있는 차량 수
+  const activeVehicles = workTotalList.filter(
+    (v) => !v.exit_time && [5, 7, 9].includes(Number(v.carState))
+  );
+
+  // 갯수 확인
+  const countParking = activeVehicles.length;
 
   useEffect(() => {
     // 입출차 차트
@@ -90,7 +110,13 @@ const MainSection = () => {
       .catch((err) => console.log("작업 목록 가져오기 실패: ", err));
   }, []);
 
-  console.log(workTotalList);
+  useEffect(() => {
+    getParkingList()
+      .then((res) => {
+        setParkingSpace(res);
+      })
+      .catch((err) => console.err("주차장 정보 조회실패: ", err));
+  }, []);
 
   return (
     <div className="main-page">
@@ -117,7 +143,7 @@ const MainSection = () => {
           <div className="list-title">
             <div className="title-content">
               <h3 id="title">현재 주차장 차량 목록</h3>
-              <span id="car-count">총 (변환필요)대 주차중</span>
+              <span id="car-count">총 {countParking}대 주차중</span>
             </div>
           </div>
           {/* 주차 목록 테이블 */}
@@ -128,16 +154,30 @@ const MainSection = () => {
                   <th>차량번호</th>
                   <th>주차 위치</th>
                   <th>입차 시간</th>
-                  <th>주차 시간</th>
                 </tr>
               </thead>
               <tbody>
-                <tr key="2" className="table-content">
-                  <td>차량번호</td>
-                  <td>(주차칸)번 주차면</td>
-                  <td>입차시간</td>
-                  <td>주차시간</td>
-                </tr>
+                {sectors.map((sector) => {
+                  // 해당 구역에 있는, 출차시간이 없는 차량 찾기
+                  const vehicle = workTotalList.find(
+                    (v) =>
+                      Number(v.carState) ===
+                        Number(
+                          Object.keys(carStateToSector).find((k) => carStateToSector[k] === sector)
+                        ) && !v.exit_time // exit_time이 없는 데이터만
+                  );
+
+                  return (
+                    <tr key={sector}>
+                      <td className="car-number">
+                        <Car className="w-5 h-5 text-gray-400" />
+                        <span>{vehicle ? vehicle.carNumber : "비어있음"}</span>
+                      </td>
+                      <td>{sector}</td>
+                      <td>{vehicle ? vehicle.entry_time || "-" : "사용중인 차량이 없습니다"}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

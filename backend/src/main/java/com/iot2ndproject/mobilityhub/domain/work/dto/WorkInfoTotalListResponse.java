@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class WorkInfoTotalListResponse {
+    private String id;
     private String carNumber;
     private String userName;
     private int carState;
@@ -39,7 +40,8 @@ public class WorkInfoTotalListResponse {
         if (entity.getWork() != null){
             this.workId = entity.getWork().getWorkId();
         }
-        
+
+        this.id = Long.toString(entity.getId());
         this.request_time = entity.getRequestTime();
         this.entry_time = entity.getEntryTime();
         this.exit_time = entity.getExitTime();

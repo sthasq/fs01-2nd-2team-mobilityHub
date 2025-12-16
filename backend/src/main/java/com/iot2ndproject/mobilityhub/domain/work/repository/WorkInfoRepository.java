@@ -1,6 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.work.repository;
 
 import com.iot2ndproject.mobilityhub.domain.work.dto.EntranceEntryView;
+import com.iot2ndproject.mobilityhub.domain.work.entity.WorkEntity;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,6 +18,7 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
     List<WorkInfoEntity> findByUserCar_User_UserIdOrderByRequestTimeDesc(String userId);
     List<WorkInfoEntity> findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(String userId);
 
+    List<WorkInfoEntity> findAll();
 
 //    Optional<WorkInfoEntity> findTopByImageIsNotNullOrderByRequestTimeDesc();
     
