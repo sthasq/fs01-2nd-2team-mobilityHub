@@ -30,4 +30,10 @@ public class EntryController {
         return workInfoService.getTodayEntryDTO();
     }
 
+    @PostMapping("/{workInfoId}/approve")
+    public ResponseEntity<?> approve(@PathVariable Long workInfoId) {
+        entryService.approveEntrance(workInfoId);
+        return ResponseEntity.ok().build();
+    }
+
 }

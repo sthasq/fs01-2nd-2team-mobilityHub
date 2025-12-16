@@ -1,7 +1,5 @@
 // 백엔드 통신을 위한 path
 
-import { sendComplete } from "./repairAPI";
-
 const request = {
   // 메인
   workList: "/entrance/work/list",

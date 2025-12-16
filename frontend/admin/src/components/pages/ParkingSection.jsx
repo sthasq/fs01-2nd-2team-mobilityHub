@@ -1,235 +1,171 @@
 import React, { useEffect, useState } from "react";
-import "../style/ParkingSection.css";
 import { Car, CheckCircle, XCircle } from "lucide-react";
-import { getParkingList } from "../../api/parkingAPI";
-import useMqtt from "../hook/useMqtt";
 
-// 라즈베리파이 카메라 URL
-// const CAMERA_STREAM_URL = "http://192.168.14.125:5000/video_feed";
+import "../style/ParkingSection.css"; // CSS 분리
+import { workInfoTotalList } from "../../api/workInfoAPI";
 
 export default function ParkingSection() {
-  // const BROKER_URL =
-  //   import.meta.env.VITE_BROKER_URL || "ws://localhost:8080/mqtt";
-  // console.log("브로커:", BROKER_URL);
-  const BROKER_URL = "ws://192.168.14.69:9001";
+  const [workTotalList, setWorkTotalList] = useState([]);
 
-  // 상태 관리
-  const [parkingSpots, setParkingSpots] = useState([]);
-  const [stats, setStats] = useState({
-    totalSpots: 0,
-    occupiedSpots: 0,
-    availableSpots: 0,
-    occupancyRate: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // MQTT 연결
-  const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
-
-  // MQTT 카메라 시작
   useEffect(() => {
-    if (connectStatus === "connected") {
-      console.log("MQTT 연결됨, 카메라 요청 시작");
-      publish("parking/web/parking/cam", "start");
-    }
-  }, [connectStatus, publish]);
-
-  // DB에서 주차 데이터 가져오기 (3초마다 갱신)
-  useEffect(() => {
-    fetchParkingData();
-    const interval = setInterval(fetchParkingData, 3000);
-    return () => clearInterval(interval);
+    workInfoTotalList()
+      .then((res) => {
+        setWorkTotalList(res);
+      })
+      .catch((err) => console.error("조회실패: ", err));
   }, []);
 
-  const fetchParkingData = async () => {
-    try {
-      console.log("주차 데이터 조회 시작...");
-      const data = await getParkingList();
-      console.log("DB 데이터:", data);
+  console.log(workTotalList);
 
-      if (!data || data.length === 0) {
-        console.warn("DB 데이터가 없음");
-        setError("DB 데이터를 불러올 수 없습니다.");
-        setLoading(false);
-        return;
-      }
-
-      // DB 데이터로 화면 업데이트 (P로 시작하는 주차면만 필터링)
-      const parkingData = data.filter((item) => item.sectorId && item.sectorId.startsWith("P"));
-      updateParkingDisplay(parkingData);
-      setError(null);
-      setLoading(false);
-    } catch (err) {
-      console.error("주차 현황 조회 오류:", err);
-      setError("데이터를 불러올 수 없습니다.");
-      setLoading(false);
-    }
+  const sectors = ["P01", "P02", "P03"];
+  const carStateToSector = {
+    5: "P01",
+    7: "P02",
+    9: "P03",
   };
 
-  const updateParkingDisplay = (data) => {
-    // DB 데이터를 화면용 포맷으로 변환
-    const formattedSpots = data.map((spot) => ({
-      id: spot.sectorId,
-      spotNumber: spot.sectorName,
-      status: spot.state === "empty" ? "사용가능" : "사용중",
-      statusColor: spot.state === "empty" ? "green" : "red",
-    }));
+  // 출차시간이 없으면 carstate값이 5, 7, 9(주차장 칸 번호)가 있는 차량 수
+  const activeVehicles = workTotalList.filter(
+    (v) => !v.exit_time && [5, 7, 9].includes(Number(v.carState))
+  );
 
-    setParkingSpots(formattedSpots);
+  // 갯수 확인
+  const countParking = activeVehicles.length;
 
-    // 통계 계산
-    const totalSpots = data.length;
-    const occupiedSpots = data.filter((spot) => spot.state !== "empty").length;
-    const availableSpots = totalSpots - occupiedSpots;
-    const occupancyRate = totalSpots > 0 ? Math.round((occupiedSpots / totalSpots) * 100) : 0;
+  console.log(countParking);
 
-    setStats({
-      totalSpots,
-      occupiedSpots,
-      availableSpots,
-      occupancyRate,
-    });
-  };
+  // 화면용 parkingSpots 생성
+  const parkingSpots = sectors.map((sector) => {
+    // 이 구역에 맞는 차량 찾기
+    const vehicle = activeVehicles.find((v) => carStateToSector[Number(v.carState)] === sector);
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div style={{ textAlign: "center", padding: "20px" }}>로딩 중...</div>
-      </div>
-    );
-  }
+    return {
+      id: sector,
+      spotNumber: sector,
+      status: vehicle ? "사용중" : "사용가능",
+      plateNumber: vehicle ? vehicle.carNumber : null,
+      parkedSince: vehicle ? vehicle.entry_time : null,
+    };
+  });
 
   return (
-    <div className="p-6 space-y-6">
-      {/* 에러 메시지 */}
-      {error && <div className="error-message">⚠️ {error}</div>}
-
-      {/* 상단 통계 카드 */}
-      <div className="grid grid-cols-4 gap-6">
-        {/* 전체 주차면 */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
+    <div className="parking-section p-6 space-y-6">
+      {/* 통계 카드 */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-content">
             <div>
-              <p className="text-gray-500">전체 주차면</p>
-              <p className="text-gray-900 text-2xl font-semibold mt-2">{stats.totalSpots}면</p>
+              <p className="stat-label">전체 주차면</p>
+              <p className="stat-value">{sectors.length}</p>
             </div>
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-              <Car className="w-6 h-6 text-gray-600" />
+            <div className="stat-icon bg-gray">
+              <Car />
             </div>
           </div>
         </div>
 
-        {/* 사용중 주차면 */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
+        <div className="stat-card">
+          <div className="stat-content">
             <div>
-              <p className="text-gray-500">사용중</p>
-              <p className="text-red-600 text-2xl font-semibold mt-2">{stats.occupiedSpots}대</p>
+              <p className="stat-label">사용중</p>
+              <p className="stat-value text-red">{countParking}대</p>
             </div>
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-              <XCircle className="w-6 h-6 text-red-600" />
+            <div className="stat-icon bg-red">
+              <XCircle />
             </div>
           </div>
         </div>
 
-        {/* 사용 가능 주차면 */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
+        <div className="stat-card">
+          <div className="stat-content">
             <div>
-              <p className="text-gray-500">사용가능</p>
-              <p className="text-green-600 text-2xl font-semibold mt-2">{stats.availableSpots}면</p>
+              <p className="stat-label">사용가능</p>
+              <p className="stat-value text-green">{sectors.length - countParking}면</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="stat-icon bg-green">
+              <CheckCircle />
             </div>
           </div>
         </div>
 
-        {/* 점유율 */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
+        <div className="stat-card">
+          <div className="stat-content">
             <div>
-              <p className="text-gray-500">점유율</p>
-              <p className="text-blue-600 text-2xl font-semibold mt-2">{stats.occupancyRate}%</p>
+              <p className="stat-label">점유율</p>
+              <p className="stat-value text-blue">
+                {Math.round((countParking / sectors.length) * 100)} %
+              </p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <Car className="w-6 h-6 text-blue-600" />
+            <div className="stat-icon bg-blue">
+              <Car />
             </div>
           </div>
         </div>
       </div>
 
-      {/* CCTV와 주차 현황 표시 영역 */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* CCTV 화면 (col-span-2) */}
-        <div className="col-span-2">
-          <div className="cctv-container">
-            <div className="cctv-header">주차장 카메라</div>
-            <div className="cctv-feed">
-              <img
-                src={imageSrc || null}
-                alt="주차장 카메라"
-                className="cctv-image"
-                onError={(e) => console.error("카메라 로드 실패:", e)}
-              />
-            </div>
+      {/* CCTV + 주차 공간 */}
+      <div className="main-grid">
+        {/* CCTV 화면 */}
+        <div className="cctv-container">
+          <div className="card cctv-box">
+            <div className="cctv-placeholder">📷 CCTV 스트림 대기중</div>
           </div>
         </div>
 
         {/* 주차 공간 리스트 */}
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="parking-list-header">
-            <h3 className="parking-list-title">주차 공간 현황</h3>
-          </div>
+        <div className="p-4 space-y-3">
+          {parkingSpots.map((spot) => (
+            <div
+              key={spot.id}
+              className={`p-4 rounded-lg border-2 ${
+                spot.status === "사용가능"
+                  ? "border-green-500 bg-green-50"
+                  : "border-red-500 bg-red-50"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Car
+                    className={`w-5 h-5 ${
+                      spot.status === "사용가능" ? "text-green-600" : "text-red-600"
+                    }`}
+                  />
+                  <span
+                    className={`${spot.status === "사용가능" ? "text-green-900" : "text-red-900"}`}
+                  >
+                    {spot.spotNumber}번 주차면
+                  </span>
+                </div>
 
-          <div className="parking-list-content">
-            {parkingSpots.length === 0 ? (
-              <p className="no-data">주차 정보가 없습니다.</p>
-            ) : (
-              parkingSpots.map((spot) => (
-                <div
-                  key={spot.id}
-                  className={`parking-spot-card ${
-                    spot.statusColor === "green"
-                      ? "parking-spot-available"
-                      : "parking-spot-occupied"
+                <span
+                  className={`px-2 py-1 rounded-full text-xs ${
+                    spot.status === "사용가능"
+                      ? "bg-green-200 text-green-800"
+                      : "bg-red-200 text-red-800"
                   }`}
                 >
-                  {/* 주차면 번호 및 상태 */}
-                  <div className="parking-spot-header">
-                    <div className="parking-spot-info">
-                      <Car
-                        className={`spot-icon ${
-                          spot.statusColor === "green" ? "text-green-600" : "text-red-600"
-                        }`}
-                      />
-                      <span
-                        className={`spot-number ${
-                          spot.statusColor === "green" ? "text-green-900" : "text-red-900"
-                        }`}
-                      >
-                        {spot.spotNumber}
-                      </span>
-                    </div>
+                  {spot.status}
+                </span>
+              </div>
 
-                    <span
-                      className={`status-badge ${
-                        spot.statusColor === "green"
-                          ? "status-badge-available"
-                          : "status-badge-occupied"
-                      }`}
-                    >
-                      {spot.status}
-                    </span>
+              {spot.status === "사용중" && (
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-red-700">차량번호</span>
+                    <span className="text-red-900">{spot.plateNumber}</span>
                   </div>
-
-                  {/* 사용 가능 메시지 */}
-                  {spot.statusColor === "green" && <p className="available-message">주차 가능</p>}
+                  <div className="flex justify-between">
+                    <span className="text-sm text-red-700">주차 시작</span>
+                    <span className="text-red-900">{spot.parkedSince}</span>
+                  </div>
                 </div>
-              ))
-            )}
-          </div>
+              )}
+
+              {spot.status === "사용가능" && (
+                <p className="text-center text-green-700 text-sm">주차 가능</p>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>

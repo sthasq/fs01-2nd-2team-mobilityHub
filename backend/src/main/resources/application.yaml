@@ -24,7 +24,7 @@ spring:
     # 토픽 설정
     topic:
       command: server/command # 발행(Publish)할 토픽
-      sensor: heaves/home/web/sensor/dht11 # 구독(Subscribe)할 토픽
+      sensor: parking/# # 구독(Subscribe)할 토픽
       position: rccar/+/position # RC카 위치 신호 구독 토픽
 
   jpa:

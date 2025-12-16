@@ -147,5 +147,4 @@ public class WorkInfoServiceImpl implements WorkInfoService {
 
         return dto;
     }
-    }
-
+}

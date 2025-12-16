@@ -2,6 +2,8 @@ package com.iot2ndproject.mobilityhub.domain.mqtt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
+import com.iot2ndproject.mobilityhub.domain.image.repository.ImageRepository;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.entity.ParkingMapNodeEntity;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
@@ -25,13 +27,14 @@ public class MqttService {
     private final ParkingMapNodeRepository parkingMapNodeRepository;
     private final MyPublisher mqttPublisher;
     private final ObjectMapper objectMapper;
-    
+    private final ImageRepository imageRepository;
+
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<String> message) {
         String payload = message.getPayload();
         String topic = (String) message.getHeaders().get(MqttHeaders.RECEIVED_TOPIC);
-        System.out.println("Received Message: " + payload);
-        System.out.println("Received Topic: " + topic);
+//        System.out.println("Received Message: " + payload);
+//        System.out.println("Received Topic: " + topic);
 
         // rccar/+/position 토픽 처리
         if (topic != null && topic.startsWith("rccar/") && topic.endsWith("/position")) {
@@ -40,8 +43,19 @@ public class MqttService {
             // 기타 토픽 처리 (기존 로직)
             // TODO: 다른 토픽별 비즈니스 로직 처리
         }
+        if ("parking/web/entrance/image".equals(topic)) {
+            handleEntranceImage(payload);
+            return;
+        }
+
+        if ("parking/web/entrance/capture".equals(topic)) {
+            System.out.println(topic);
+            System.out.println(payload);
+            return;
+        }
+
     }
-    
+
     /**
      * RC카 위치 신호 처리
      * topic: MQTT 토픽 (예: rccar/{carId}/position)
@@ -108,7 +122,8 @@ public class MqttService {
             e.printStackTrace();
         }
     }
-    
+
+
     /**
      * 구역별 라즈베리파이에 MQTT 신호 발행
      * nodeName을 기반으로 구역을 판단하여 신호 발행
@@ -150,4 +165,30 @@ public class MqttService {
             e.printStackTrace();
         }
     }
+    @Transactional
+    private void handleEntranceImage(String payload) {
+        try {
+            Map<String, Object> data = objectMapper.readValue(
+                    payload, new TypeReference<Map<String, Object>>() {}
+            );
+
+            String cameraId = (String) data.get("cameraId");
+            String imagePath = (String) data.get("imagePath");
+            String ocrNumber = (String) data.get("ocrNumber");
+
+            ImageEntity image = new ImageEntity();
+            image.setCameraId(cameraId);
+            image.setImagePath(imagePath);
+            image.setOcrNumber(ocrNumber);
+
+            imageRepository.save(image);
+
+            System.out.println("✅ image 테이블 저장 완료");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
+

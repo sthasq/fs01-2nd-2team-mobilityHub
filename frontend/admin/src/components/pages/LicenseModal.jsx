@@ -1,22 +1,32 @@
 import { useState } from "react";
-import axios from "axios";
+import { updateOcrNumber } from "../../api/EntranceAPI";
 import "../style/LicenseModal.css";
 
-const API_BASE = "http://localhost:9000";
-
 export default function LicenseModal({ data, onClose, onSuccess }) {
-  const [plate, setPlate] = useState(data?.carNumber || "");
+  const [plate, setPlate] = useState(data.correctedOcrNumber || data.ocrNumber || "");
+  const [loading, setLoading] = useState(false);
 
   const submit = async () => {
+    if (!data.imageId) {
+      alert("이미지 정보가 없습니다.");
+      return;
+    }
+
     try {
-      await axios.put(`${API_BASE}/entrance/plate`, {
-        workId: data.workId,
-        carNumber: plate,
-      });
-      onSuccess();
+      setLoading(true);
+
+      // ✅ OCR 수정
+      await updateOcrNumber(data.imageId, plate);
+
+      // ✅ 최신 데이터 강제 재조회
+      await onSuccess(true);
+
       onClose();
     } catch (e) {
+      console.error("OCR 수정 실패", e);
       alert("번호판 수정 실패");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,11 +43,11 @@ export default function LicenseModal({ data, onClose, onSuccess }) {
         />
 
         <div className="modal-actions">
-          <button className="btn-cancel" onClick={onClose}>
+          <button className="btn-cancel" onClick={onClose} disabled={loading}>
             취소
           </button>
-          <button className="btn-save" onClick={submit}>
-            저장
+          <button className="btn-save" onClick={submit} disabled={loading}>
+            {loading ? "저장중..." : "저장"}
           </button>
         </div>
       </div>

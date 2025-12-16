@@ -63,12 +63,12 @@
 }
 
 #car-count {
-  color: white;
-  background-color: green;
+  color: blue;
 }
 
 .parkingcar-table {
-  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 table {
@@ -79,22 +79,50 @@ thead {
   background-color: #f9fafb;
 }
 
-th {
-  padding: 0.75rem 1.5rem;
-  text-align: left;
-  color: rgb(82, 82, 82);
+.parking-table th,
+.parking-table td {
+  padding: 12px 16px; /* th와 td 동일하게 패딩 */
+  text-align: left; /* 왼쪽 정렬 */
+  vertical-align: middle; /* 세로 중앙 정렬 */
 }
 
-tbody {
-  border-top: 1px solid rgb(173, 173, 173);
+.parking-table td.car-number {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.parking-table td.spot,
+.parking-table td.entry {
+  text-align: center; /* 가운데 정렬 */
+}
+
+.parking-table th {
+  background-color: #f9fafb;
+  color: #374151;
+  font-weight: 600;
 }
 
 tbody > tr:hover {
   background-color: rgb(214, 214, 214);
 }
 
+tbody > tr > td {
+  padding-left: 15px;
+  padding-top: 20px;
+}
+
 .table-content > td {
   padding: 0.75rem 1rem;
+}
+
+thead > tr > th {
+  padding-left: 1.5rem; /* px-6 */
+  padding-right: 1.5rem; /* px-6 */
+  padding-top: 0.75rem; /* py-3 */
+  padding-bottom: 0.75rem; /* py-3 */
+  text-align: left; /* text-left */
+  color: #374151;
 }
 
 .weather-info {

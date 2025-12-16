@@ -1,18 +1,22 @@
 const TOPIC_NAME = "parking/web/#"; // 토픽명
 
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import mqtt from "mqtt";
 
 const useMqtt = (brokerUrl) => {
   const [connectStatus, setConnectStatus] = useState("connecting");
   const [client, setClient] = useState(null);
+
+  // 🔴 실시간 CCTV 스트리밍 이미지
   const [imageSrc, setImageState] = useState("");
 
+  // 🟢 캡처된 정지 이미지
+  const [capturedImage, setCapturedImage] = useState("");
+
   useEffect(() => {
-    // 2. 브로커와 연결생성
+    // 브로커 연결
     const mqttClient = mqtt.connect(brokerUrl, {
-      clientId: `react_client_${Math.random().toString(16).substring(2, 8)}`, // 고유아이디
-      //clientId: "test",
+      clientId: `react_client_${Math.random().toString(16).substring(2, 8)}`,
       keepalive: 60,
       protocolId: "MQTT",
       clean: true,
@@ -20,13 +24,11 @@ const useMqtt = (brokerUrl) => {
       connectTimeout: 30 * 1000,
     });
 
-    // 1. 연결이 완료되면 실행할 콜백함수
-    //    브로커에 구독신청
+    // 연결 성공
     mqttClient.on("connect", () => {
       console.log("연결성공............");
       setConnectStatus("connected");
-      // 토픽의 구독신청
-      // subscribe함수는 토픽과 구독신청 결과 확인하는 용도로 함수정의
+
       mqttClient.subscribe(TOPIC_NAME, (err) => {
         if (!err) {
           console.log(`구독신청 ${TOPIC_NAME}`);
@@ -36,38 +38,52 @@ const useMqtt = (brokerUrl) => {
       });
     });
 
-    // 메시지가 subscribe되면 실행될 콜백함수를 등록
+    // 메시지 수신
     mqttClient.on("message", (topic, message) => {
-      if (topic == "parking/web/carwash/cam" || topic == "parking/web/repair/cam") {
-        const base64Image = message.toString();
-        setImageState(`data:image/jpeg;base64,${base64Image}`);
-        const payload = message.toString();
-        console.log(payload);
-      } else if (topic === "heaves/home/web/sensor/dht11") {
-        const payload = message.toString();
-        //console.log(payload);
-        // 수신된 dht11의 온도와 습도를 파싱 - 추후에 subscribe하는 것이 많아지면 이 코드를 수정
+      const payload = message.toString();
+
+      // 📺 실시간 CCTV
+      if (
+        topic === "parking/web/carwash/cam" ||
+        topic === "parking/web/repair/cam" ||
+        topic === "parking/web/entrance/cam"
+      ) {
+        setImageState(`data:image/jpeg;base64,${payload}`);
+        return;
+      }
+
+      // 📸 캡처 이미지
+      if (topic === "parking/web/entrance/capture") {
+        console.log("📸 캡처 이미지 수신");
+        setCapturedImage(`data:image/jpeg;base64,${payload}`);
+        return;
+      }
+
+      // 🌡 센서 데이터
+      if (topic === "heaves/home/web/sensor/dht11") {
         try {
-          // JSON 문자열을 자바스크립트 객체로 변환
           const data = JSON.parse(payload);
-          console.log("받은 온도습도 데이터: ", data);
+          console.log("센서 데이터:", data);
         } catch (e) {
-          console.error("JSON파싱오류(데이터의 형식이 JSON이 아님:::::", e);
+          console.error("센서 JSON 파싱 오류", e);
         }
       }
     });
 
-    // 연결시 에러가 발생되면 처리
+    // 에러 처리
     mqttClient.on("error", (err) => {
       console.log("Connection오류: ", err);
       mqttClient.end();
     });
+
     setClient(mqttClient);
-    // cleanup코드를 정의 - 컴포넌트가 사라질때 연결 끊기
+
+    // cleanup
     return () => {
       if (mqttClient) {
         mqttClient.publish("parking/web/carwash/cam", "stop");
         mqttClient.publish("parking/web/repair/cam", "stop");
+        mqttClient.publish("parking/web/entrance/cam", "stop");
         mqttClient.end();
         setConnectStatus("connecting");
         console.log("MQTT연결종료");
@@ -75,6 +91,7 @@ const useMqtt = (brokerUrl) => {
     };
   }, [brokerUrl]);
 
+  // publish 함수
   const publish = useCallback(
     (topic, message) => {
       if (client) {
@@ -85,7 +102,13 @@ const useMqtt = (brokerUrl) => {
     },
     [client]
   );
-  return { connectStatus, imageSrc, publish };
+
+  return {
+    connectStatus,
+    imageSrc, // 실시간 CCTV
+    capturedImage, // 📸 캡처 이미지
+    publish,
+  };
 };
 
 export default useMqtt;
