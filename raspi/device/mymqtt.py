@@ -88,8 +88,8 @@ class MqttWorker:
                 frame = self.camera.getStreaming()
                 ##publisher.single("parking/web/carwash/cam", frame, hostname="192.168.14.38")
                 publisher.single("parking/web/carwash/cam", frame, hostname="192.168.137.1")
-                #publisher.single("parking/web/carwash/cam", frame, hostname="192.168.14.56")
-                
+                publisher.single("parking/web/repair/cam", frame, hostname="192.168.14.39")# 작업하는 사람 브로커 주소 넣기 
+                #publisher.single("parking/web/repair/cam", frame, hostname="192.168.14.56")
                 
             except Exception as e:
                 #print("영상 전송 중 에러: ", e)
