@@ -2,9 +2,8 @@ package com.iot2ndproject.mobilityhub.domain.repair.controller;
 
 import com.iot2ndproject.mobilityhub.domain.repair.dto.*;
 import com.iot2ndproject.mobilityhub.domain.repair.service.RepairService;
-import com.iot2ndproject.mobilityhub.domain.work.service.ServiceRequestService;
+import com.iot2ndproject.mobilityhub.domain.service_request.service.ServiceRequestService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

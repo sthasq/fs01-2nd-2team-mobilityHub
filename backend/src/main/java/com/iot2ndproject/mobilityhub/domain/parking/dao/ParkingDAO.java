@@ -1,6 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.parking.dao;
 
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
+
 import java.util.List;
 
 public interface ParkingDAO {

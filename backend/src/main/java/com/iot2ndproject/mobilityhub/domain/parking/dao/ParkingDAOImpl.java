@@ -1,11 +1,12 @@
 // ParkingDAOImpl.java
 package com.iot2ndproject.mobilityhub.domain.parking.dao;
 
-import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.dto.ParkingDTO;
+import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.repository.ParkingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,7 @@ public class ParkingDAOImpl implements ParkingDAO {
     }
 
     @Override
-    public java.util.List<ParkingEntity> findAll() {
+    public List<ParkingEntity> findAll() {
         return parkingRepository.findAll();
     }
 

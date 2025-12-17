@@ -1,7 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.repair.entity;
 
 import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

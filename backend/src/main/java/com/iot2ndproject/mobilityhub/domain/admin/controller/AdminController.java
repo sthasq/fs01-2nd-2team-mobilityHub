@@ -25,19 +25,19 @@ public class AdminController {
 
     // GET: 관리자 정보 조회
     @GetMapping("/info")
-    public AdminResponseDTO getMyInfo(@RequestParam String adminId) {
+    public AdminResponseDTO getMyInfo(@RequestParam(name = "adminId") String adminId) {
         return adminService.getAdminInfo(adminId);
     }
 
     // POST: 관리자 정보 수정
     @PostMapping("/update")
-    public AdminResponseDTO updateAdmin(@RequestParam String adminId, @RequestBody AdminUpdateRequest request) {
+    public AdminResponseDTO updateAdmin(@RequestParam(name = "adminId") String adminId, @RequestBody AdminUpdateRequest request) {
         return adminService.updateInfo(adminId, request);
     }
 
     // POST: 비밀번호 변경
     @PostMapping("/password")
-    public String changePassword( @RequestParam String adminId, @RequestBody AdminPassChangeRequest request) {
+    public String changePassword( @RequestParam(name = "adminId") String adminId, @RequestBody AdminPassChangeRequest request) {
         adminService.changePassword(adminId, request);
         return "비밀번호가 변경되었습니다.";
     }

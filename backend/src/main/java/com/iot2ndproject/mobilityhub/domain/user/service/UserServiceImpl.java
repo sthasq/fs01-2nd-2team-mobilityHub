@@ -4,7 +4,6 @@ import com.iot2ndproject.mobilityhub.domain.user.dao.UserDAO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserListDTO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserProfileDTO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserRequestDTO;
-import com.iot2ndproject.mobilityhub.domain.user.dto.UserResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,9 +16,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final ModelMapper modelMapper;
+
     private final UserDAO userDAO;
+
+    private final ModelMapper modelMapper;
     private final PasswordEncoder encoder;
+
     @Override
     public void write(UserRequestDTO user) {
         user.setPassword(encoder.encode(user.getPassword()));

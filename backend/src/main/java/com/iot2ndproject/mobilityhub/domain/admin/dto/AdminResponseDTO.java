@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+// 관리자 정보 뽑아내기 위한 Response
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

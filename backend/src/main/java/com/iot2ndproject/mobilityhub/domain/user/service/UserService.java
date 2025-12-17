@@ -1,10 +1,8 @@
 package com.iot2ndproject.mobilityhub.domain.user.service;
 
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserListDTO;
-import com.iot2ndproject.mobilityhub.domain.user.dto.UserRequestDTO;
-import com.iot2ndproject.mobilityhub.domain.user.dto.UserResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserProfileDTO;
-import com.iot2ndproject.mobilityhub.domain.work.dto.WorkInfoResponseDTO;
+import com.iot2ndproject.mobilityhub.domain.user.dto.UserRequestDTO;
 
 import java.util.List;
 

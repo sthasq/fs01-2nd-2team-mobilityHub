@@ -1,6 +1,6 @@
 package com.iot2ndproject.mobilityhub.domain.repair.dto;
 
-import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
+import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

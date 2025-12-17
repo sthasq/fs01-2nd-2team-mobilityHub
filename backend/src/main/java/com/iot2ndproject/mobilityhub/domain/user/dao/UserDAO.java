@@ -1,10 +1,6 @@
 package com.iot2ndproject.mobilityhub.domain.user.dao;
 
 import com.iot2ndproject.mobilityhub.domain.user.entity.UserEntity;
-import com.iot2ndproject.mobilityhub.domain.user.repository.UserRepository;
-import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 

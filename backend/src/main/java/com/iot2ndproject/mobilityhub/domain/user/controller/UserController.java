@@ -1,11 +1,10 @@
 package com.iot2ndproject.mobilityhub.domain.user.controller;
 
 import com.iot2ndproject.mobilityhub.domain.user.dto.*;
-import com.iot2ndproject.mobilityhub.domain.user.entity.UserEntity;
 import com.iot2ndproject.mobilityhub.domain.user.jwt.TokenProvider;
 import com.iot2ndproject.mobilityhub.domain.user.service.UserService;
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
+import com.iot2ndproject.mobilityhub.domain.car.entity.CarEntity;
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,9 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-
-
 
 @RestController
 @RequestMapping("/user")

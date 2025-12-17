@@ -2,7 +2,7 @@ package com.iot2ndproject.mobilityhub.domain.repair.dao;
 
 import com.iot2ndproject.mobilityhub.domain.repair.entity.ReportEntity;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
-import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
+import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 
 import java.util.List;
 

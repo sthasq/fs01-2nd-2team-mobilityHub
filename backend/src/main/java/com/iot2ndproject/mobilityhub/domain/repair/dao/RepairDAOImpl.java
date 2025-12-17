@@ -2,10 +2,10 @@ package com.iot2ndproject.mobilityhub.domain.repair.dao;
 
 import com.iot2ndproject.mobilityhub.domain.repair.entity.ReportEntity;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
-import com.iot2ndproject.mobilityhub.domain.repair.repository.RepairReportRepository;
-import com.iot2ndproject.mobilityhub.domain.repair.repository.RepairRequestRepository;
+import com.iot2ndproject.mobilityhub.domain.repair.repository.ReportRepository;
 import com.iot2ndproject.mobilityhub.domain.repair.repository.StockStatusRepository;
-import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
+import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
+import com.iot2ndproject.mobilityhub.domain.service_request.repository.WorkInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -15,8 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RepairDAOImpl implements RepairDAO {
     private final StockStatusRepository stockStatusRepository;
-    private final RepairRequestRepository workRepository;
-    private final RepairReportRepository repairReportRepository;
+    private final WorkInfoRepository workInfoRepository;
+    private final ReportRepository repairReportRepository;
 
 
     // 모든 재고 호출
@@ -28,7 +28,7 @@ public class RepairDAOImpl implements RepairDAO {
     // work_info 테이블 모두 호출
     @Override
     public List<WorkInfoEntity> findRequestAll() {
-        return workRepository.findAll();
+        return workInfoRepository.findAll();
     }
 
     // 재고 신규 추가

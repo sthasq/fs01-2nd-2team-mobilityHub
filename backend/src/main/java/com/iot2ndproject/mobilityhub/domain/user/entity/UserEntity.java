@@ -2,20 +2,12 @@
 
 package com.iot2ndproject.mobilityhub.domain.user.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.integration.annotation.Default;
-
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

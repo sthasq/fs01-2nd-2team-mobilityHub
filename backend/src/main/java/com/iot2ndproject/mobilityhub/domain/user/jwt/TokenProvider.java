@@ -2,6 +2,7 @@ package com.iot2ndproject.mobilityhub.domain.user.jwt;
 
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserResponseDTO;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
-import io.jsonwebtoken.io.Decoders;
+
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Date;

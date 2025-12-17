@@ -2,16 +2,11 @@
 
 package com.iot2ndproject.mobilityhub.domain.parking.entity;
 
-import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
+import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
 
 
 

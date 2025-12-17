@@ -1,16 +1,11 @@
 package com.iot2ndproject.mobilityhub.domain.user.dto;
 
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @AllArgsConstructor
