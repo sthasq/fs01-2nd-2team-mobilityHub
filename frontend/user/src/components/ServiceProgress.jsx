@@ -329,7 +329,8 @@ export function ServiceProgress({ isLogin }) {
                     await callVehicle(progress.id);
                     alert("차량 호출 신호가 발행되었습니다. 차량이 출구로 이동합니다.");
                   } catch (error) {
-                    console.error(error);
+                    console.error("차량 호출 에러:", error);
+                    console.error("에러 응답:", error.response?.data);
                     const errorMessage = error.response?.data?.error || "차량 호출 중 오류가 발생했습니다.";
                     alert(errorMessage);
                   } finally {

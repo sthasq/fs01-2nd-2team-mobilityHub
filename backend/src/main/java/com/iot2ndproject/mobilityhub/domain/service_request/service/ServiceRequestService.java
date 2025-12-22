@@ -3,6 +3,7 @@ package com.iot2ndproject.mobilityhub.domain.service_request.service;
 import com.iot2ndproject.mobilityhub.domain.service_request.dto.ServiceRequestDTO;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ServiceRequestService {
@@ -11,4 +12,6 @@ public interface ServiceRequestService {
     Optional<ServiceRequestDTO> getLatest(String userId);
     boolean updateStatus(Long id, String status, String service);
     void completeService(int workInfoId, String stage);
+    Map<String, Object> callVehicle(Long workInfoId);
+    void publishRouteCommand(ServiceRequestDTO dto);
 }
