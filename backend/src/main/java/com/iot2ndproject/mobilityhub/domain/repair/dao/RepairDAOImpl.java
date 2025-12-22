@@ -9,6 +9,7 @@ import com.iot2ndproject.mobilityhub.domain.service_request.repository.WorkInfoR
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -18,20 +19,23 @@ public class RepairDAOImpl implements RepairDAO {
     private final WorkInfoRepository workInfoRepository;
     private final ReportRepository repairReportRepository;
 
-
-    // 모든 재고 호출
+    // 재고 리스트
     @Override
     public List<StockStatusEntity> findStockAll() {
         return stockStatusRepository.findAll();
     }
 
-    // work_info 테이블 모두 호출
+    // work_info테이블에서 오늘인 데이터만 추출
+//    @Override
+//    public List<WorkInfoEntity> findRequestAll() {
+//        return workInfoRepository.findAll();
+//    }
     @Override
-    public List<WorkInfoEntity> findRequestAll() {
-        return workInfoRepository.findAll();
+    public List<WorkInfoEntity> findByRequestTimeBetween(LocalDateTime start, LocalDateTime end) {
+        return workInfoRepository.findByRequestTimeBetween(start, end);
     }
 
-    // 재고 신규 추가
+    // 재고 추가
     @Override
     public void createStock(StockStatusEntity stock) {
         stockStatusRepository.save(stock);

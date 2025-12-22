@@ -4,6 +4,7 @@ import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
 import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ReportEntity {
     @Id
     private String reportId;  // 보고서ID

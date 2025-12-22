@@ -2,6 +2,7 @@ package com.iot2ndproject.mobilityhub.domain.repair.service;
 
 import com.iot2ndproject.mobilityhub.domain.admin.dao.AdminDAO;
 import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
+import com.iot2ndproject.mobilityhub.domain.parking.dao.ParkingDAO;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.repository.ParkingRepository;
 import com.iot2ndproject.mobilityhub.domain.repair.dao.RepairDAO;
@@ -10,6 +11,8 @@ import com.iot2ndproject.mobilityhub.domain.repair.entity.ReportEntity;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
 import com.iot2ndproject.mobilityhub.domain.car.dao.UserCarDAO;
 import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
+import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
+import com.iot2ndproject.mobilityhub.global.util.DateRange;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -18,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,55 +31,42 @@ public class RepairServiceImpl implements RepairService {
     private final RepairDAO repairDAO;
     private final UserCarDAO userCarDAO;
     private final AdminDAO adminDAO;
+    private final ParkingDAO parkingDAO;
 
     private final ModelMapper modelMapper;
 
-    private final ParkingRepository parkingRepository;
-
-
-    // (임시) 재고 리스트
+    // 오늘자 정비요청 리스트
     @Override
-    public List<StockStatusResponse> stockList() {
-        return repairDAO.findStockAll().stream()
-                .map(StockStatusResponse::new)
-                .collect(Collectors.toList());
-    }
+    public List<RepairResponseDTO> findTodayWorkInfo(){
 
-    // (임시) 정비요청 리스트
-    @Override
-    public List<RepairResponseDTO> repairList() {
-        return repairDAO.findRequestAll().stream()
+        LocalDateTime start = DateRange.todayStart();
+        LocalDateTime end = DateRange.tomorrowStart();
+
+        List<WorkInfoEntity> todayList = repairDAO.findByRequestTimeBetween(start, end);
+        List<RepairResponseDTO> list = todayList.stream()
                 .filter(entity -> entity.getWork().getWorkId() == 2 || entity.getWork().getWorkId() == 5)
                 .map(RepairResponseDTO::new)
                 .collect(Collectors.toList());
+
+        return list;
     }
 
-    // 정비존 메인페이지에 모든내용 보여주기 위한 방법
+    // 재고 리스트
     @Override
-    public ResponseDTO list() {
-        // 재고 리스트
-        List<StockStatusResponse> stockStatusList =
-                repairDAO.findStockAll().stream()
-                        .map(StockStatusResponse::new)
-                        .collect(Collectors.toList());
+    public List<StockStatusResponse> stockList() {
+        List<StockStatusResponse> stockStatusResponseList = repairDAO.findStockAll().stream()
+                .map(StockStatusResponse::new)
+                .collect(Collectors.toList());
 
-        // 정비 요청 리스트
-        List<RepairResponseDTO> repairList =
-                repairDAO.findRequestAll().stream()
-                        .filter(entity -> entity.getWork().getWorkId() == 2 || entity.getWork().getWorkId() == 5)
-                        .filter(entity -> entity.getRequestTime().toLocalDate().isEqual(LocalDate.now()))
-                        .map(RepairResponseDTO::new)
-                        .sorted(Comparator.comparing(RepairResponseDTO::getId))
-                        .collect(Collectors.toList());
-
-        return new ResponseDTO(stockStatusList, repairList);
+        return stockStatusResponseList;
     }
 
+    // 아이디로 재고별 조회
     @Override
     public StockStatusResponse findByInventoryId(String inventoryId) {
         StockStatusEntity entity = repairDAO.findByInventoryId(inventoryId);
 
-        return StockStatusResponse.builder()
+        StockStatusResponse response = StockStatusResponse.builder()
                 .inventoryId(entity.getInventoryId())
                 .productName(entity.getProductName())
                 .stockCategory(entity.getStockCategory())
@@ -85,11 +74,14 @@ public class RepairServiceImpl implements RepairService {
                 .updateTime(entity.getUpdateTime())
                 .sectorId(entity.getSectorId().getSectorId())
                 .build();
+
+        return response;
     }
 
+    // 재고 추가
     @Override
     public void createStock(StockCreateRequest stock) {
-        ParkingEntity parkingEntity = parkingRepository.findBySectorId("Ramin");
+        ParkingEntity radmin = parkingDAO.findById("Radmin");
 
         StockStatusEntity entity = StockStatusEntity.builder()
                 .inventoryId(stock.getInventoryId())
@@ -98,7 +90,7 @@ public class RepairServiceImpl implements RepairService {
                 .stockQuantity(stock.getStockQuantity())
                 .stockPrice(stock.getStockPrice())
                 .minStockQuantity(stock.getMinStockQuantity())
-                .sectorId(parkingEntity)
+                .sectorId(radmin)
                 .stockUnits(stock.getStockUnits())
                 .updateTime(LocalDateTime.now())
                 .build();
@@ -106,13 +98,9 @@ public class RepairServiceImpl implements RepairService {
         repairDAO.createStock(entity);
     }
 
+    // 재고 수량만 수정
     @Override
-    public void deleteStock(String inventoryId) {
-        repairDAO.deleteStock(inventoryId);
-    }
-
     @Transactional
-    @Override
     public void updateStockQuantity(String inventoryId, int stockQuantity) {
         StockStatusEntity entity = repairDAO.findByInventoryId(inventoryId);
 
@@ -123,6 +111,7 @@ public class RepairServiceImpl implements RepairService {
         entity.setStockQuantity(stockQuantity);
     }
 
+    // 재고 이름,카테고리,수량 변경
     @Override
     public void updateStockStatus(StockUpdateRequest request) {
         StockStatusEntity entity = repairDAO.findByInventoryId(request.getInventoryId());
@@ -136,58 +125,61 @@ public class RepairServiceImpl implements RepairService {
 
     }
 
+    // 재고 삭제
+    @Override
+    public void deleteStock(String inventoryId) {
+        repairDAO.deleteStock(inventoryId);
+    }
+
+    // 보고서 리스트
     @Override
     public List<ReportResponseDTO> reportList() {
-        System.out.println( repairDAO.reportList().get(0).getUserCar().getId() );
-        return repairDAO.reportList().stream()
-                .map(report -> {
-                    System.out.println(report.getUserCar());
-                    ReportResponseDTO dto = new ReportResponseDTO();
-                    UserCarEntity entity = userCarDAO.findById(report.getUserCar().getId());
-
-                    dto.setReportId(report.getReportId());
-                    dto.setUserCarId(Math.toIntExact(entity.getId()));
-                    dto.setCarNumber(report.getUserCar().getCar().getCarNumber());
-                    dto.setUserName(report.getUserCar().getUser().getUserName());
-                    dto.setRepairTitle(report.getRepairTitle());
-                    dto.setRepairDetail(report.getRepairDetail());
-                    dto.setRepairAmount(report.getRepairAmount());
+        List<ReportResponseDTO> reportList = repairDAO.reportList().stream()
+                .map(entity ->  {
+                    ReportResponseDTO dto = new ReportResponseDTO(entity);
+                    dto.setUserName(entity.getUserCar().getUser().getUserName());
 
                     return dto;
                 })
                 .collect(Collectors.toList());
+
+        return reportList;
     }
 
+    // 아디디 별 보고서 조회
     @Override
     public ReportResponseDTO findByReportId(String reportId) {
         ReportEntity entity = repairDAO.findByReportId(reportId);
 
-        ReportResponseDTO dto = new ReportResponseDTO();
+        ReportResponseDTO dto = ReportResponseDTO.builder()
+                .reportId(entity.getReportId())
+                .carNumber(entity.getUserCar().getCar().getCarNumber())
+                .userName(entity.getUserCar().getUser().getUserName())
+                .repairTitle(entity.getRepairTitle())
+                .repairDetail(entity.getRepairDetail())
+                .repairAmount(entity.getRepairAmount())
+                .build();
 
-        dto.setReportId(entity.getReportId());
-        dto.setCarNumber(entity.getUserCar().getCar().getCarNumber());
-        dto.setUserName(entity.getUserCar().getUser().getUserName());
-        dto.setRepairTitle(entity.getRepairTitle());
-        dto.setRepairDetail(entity.getRepairDetail());
-        dto.setRepairAmount(entity.getRepairAmount());
         return dto;
     }
 
+    // 보고서 작성
     @Override
     public void reportWrite(ReportRequestDTO reportRequestDTO) {
         AdminEntity adminEntity = adminDAO.findByAdminId("Radmin");
         UserCarEntity userCarEntity = userCarDAO.findById(reportRequestDTO.getUserCarId());
-        ReportEntity entity = new ReportEntity();
-
-        entity.setUserCar(userCarEntity);
-        entity.setAdmin(adminEntity);
-        entity.setRepairTitle(reportRequestDTO.getRepairTitle());
-        entity.setRepairDetail(reportRequestDTO.getRepairDetail());
-        entity.setRepairAmount(reportRequestDTO.getRepairAmount());
+        ReportEntity entity = ReportEntity.builder()
+                .userCar(userCarEntity)
+                .admin(adminEntity)
+                .repairTitle(reportRequestDTO.getRepairTitle())
+                .repairDetail(reportRequestDTO.getRepairDetail())
+                .repairAmount(reportRequestDTO.getRepairAmount())
+                .build();
 
         repairDAO.writeReport(entity);
     }
 
+    // 보고서 수정
     @Override
     public void updateReport(ReportRequestDTO reportRequestDTO) {
         ReportEntity entity = repairDAO.findByReportId(reportRequestDTO.getReportId());
@@ -199,13 +191,14 @@ public class RepairServiceImpl implements RepairService {
         repairDAO.updateReport(entity);
     }
 
+    // 보고서 삭제
     @Override
     public void deleteReport(String reportId) {
-        ReportEntity entity = repairDAO.findByReportId(reportId);
 
-        repairDAO.deleteReport(entity.getReportId());
+        repairDAO.deleteReport(reportId);
     }
 
+    // 정비 총금액
     @Override
     public List<ReportResponseDTO> repairAmount() {
         List<ReportEntity> entities = repairDAO.repairAmount();

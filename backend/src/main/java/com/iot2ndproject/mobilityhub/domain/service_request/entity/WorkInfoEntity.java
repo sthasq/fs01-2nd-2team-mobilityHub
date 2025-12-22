@@ -66,8 +66,4 @@ public class WorkInfoEntity {
         this.work = work;
     }
 
-    // 입구게이트에서 인식되었을 때
-    // 출구게이트에서 인식되었을 때
-    // => setter를 이용해서 작업하면 되므로 생성자 필요없을듯?
-
 }

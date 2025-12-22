@@ -6,21 +6,18 @@ import java.util.List;
 
 public interface RepairService {
 
+    // 정비요청 리스트
+//    List<RepairResponseDTO> repairList();
+    List<RepairResponseDTO> findTodayWorkInfo();
+
+    // 재고현황 리스트
     List<StockStatusResponse> stockList();
 
-    List<RepairResponseDTO> repairList();
-
-    // 전체 조회(재고, 정비이용차량)
-    ResponseDTO list();
-
-    // 재고아이디로 재고찾기
+    // 재고아이디로 재고별 조회
     StockStatusResponse findByInventoryId(String inventoryId);
 
     //재고 추가
     void createStock(StockCreateRequest stock);
-
-    // 재고 삭제
-    void deleteStock(String inventoryId);
 
     // 재고 수량 변경
     void updateStockQuantity(String inventoryId, int stockQuantity);
@@ -28,10 +25,13 @@ public interface RepairService {
     // 재고 이름,유형,수량,가격 수정
     void updateStockStatus(StockUpdateRequest stockUpdateRequest);
 
+    // 재고 삭제
+    void deleteStock(String inventoryId);
+
     // 보고서 전체 조회
     List<ReportResponseDTO> reportList();
 
-    // 보고서아이디 별 조회
+    // 아이디 별 보고서조회
     ReportResponseDTO findByReportId(String reportId);
 
     // 보고서 작성

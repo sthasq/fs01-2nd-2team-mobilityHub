@@ -18,20 +18,17 @@ public class RepairController {
     private final RepairService repairService;
     private final ServiceRequestService serviceRequestService;
 
-    @GetMapping("/a")
+    // 정비요청 리스트
+    @GetMapping("/repair_list")
     public List<RepairResponseDTO> repairList(){
-        return repairService.repairList();
+//        return repairService.repairList();
+        return repairService.findTodayWorkInfo();
     }
 
-    @GetMapping("/b")
+    // 재고현황 리스트
+    @GetMapping("/stock_list")
     public List<StockStatusResponse> stockList(){
         return repairService.stockList();
-    }
-
-    // 정비존페이지 들어갔을 때
-    @GetMapping("/list")
-    public ResponseDTO list() {
-        return repairService.list();
     }
 
     // 재고별 상세페이지
@@ -50,10 +47,10 @@ public class RepairController {
 
     // 재고 수량 변경
     @PostMapping("/detail/update/quantity")
-    public ResponseEntity<?> updateStockQuantity(@RequestParam("inventoryId") String inventoryId, @RequestBody StockQuantityUpdateRequest request) {
-        repairService.updateStockQuantity(inventoryId, request.getStockQuantity());
+    public ResponseEntity<?> updateStockQuantity(@RequestParam("inventoryId") String inventoryId, @RequestBody int quantity) {
+        repairService.updateStockQuantity(inventoryId, quantity);
 
-        return ResponseEntity.ok(inventoryId+"의 수량이+"+request.getStockQuantity()+"로 변경되었습니다.");
+        return ResponseEntity.ok(inventoryId+"의 수량이+"+quantity+"로 변경되었습니다.");
     }
 
     // 재고 이름/유형/수량/가격 변경
@@ -118,7 +115,6 @@ public class RepairController {
     @PostMapping("/complete")
     public ResponseEntity<?> completeRepair(@RequestParam(name = "workInfoId") int workInfoId) {
         serviceRequestService.completeService(workInfoId, "repair");
-        System.out.println("sdfaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         return ResponseEntity.ok(Map.of("message", "정비 완료 신호 rc카에 전송"));
     }
 
