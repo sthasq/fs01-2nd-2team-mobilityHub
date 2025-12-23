@@ -18,7 +18,8 @@ const request = {
   carWashing: "/carwash/select",
   sendWashComplete: "/carwash/complete",
   //정비소
-  repairAll: "/repair/list",
+  repairList: "/repair/repair_list",
+  stockList: "/repair/stock_list",
   reportList: "/repair/report/list",
   createStock: "/repair/create",
   updateStock: "/repair/detail/update",

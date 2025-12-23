@@ -2,14 +2,26 @@ import React from "react";
 import backendServer from "./backendServer";
 import request from "./requests";
 
-// 재고&차량내용 전체리스트
-export const repairPageAllList = async () => {
+// 금일 작업요청한 work_info리스트
+export const repairTodayList = async () => {
   try {
-    const response = await backendServer.get(request.repairAll);
+    const response = await backendServer.get(request.repairList);
 
     return response.data;
   } catch (error) {
     console.error("에러발생: ", error);
+    return [];
+  }
+};
+
+// 재고 리스트
+export const stockAllList = async () => {
+  try {
+    const response = await backendServer.get(request.stockList);
+
+    return response.data;
+  } catch (error) {
+    console.error("재고리스트 호출도중 에러발생: ", error);
     return [];
   }
 };
@@ -41,7 +53,10 @@ export const createStock = async (stockData) => {
 // 재고 내용 변경
 export const updateStock = async (updateStockData) => {
   try {
-    const response = await backendServer.post(request.updateStock, updateStockData);
+    const response = await backendServer.post(
+      request.updateStock,
+      updateStockData
+    );
     return response;
   } catch (error) {
     console.error("에러발생: ", error);
@@ -77,9 +92,13 @@ export const writeReport = async (reportData) => {
 // 작업완료 rc카에 보내기
 export const sendComplete = async (workInfoId) => {
   try {
-    const response = await backendServer.post(request.sendRepairComplete, null, {
-      params: { workInfoId },
-    });
+    const response = await backendServer.post(
+      request.sendRepairComplete,
+      null,
+      {
+        params: { workInfoId },
+      }
+    );
 
     return response;
   } catch (error) {
