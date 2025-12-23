@@ -17,12 +17,13 @@ public class EntranceController {
     private final EntranceService entranceService;
     private final EntryService entryService;
 
+    //가장 최근에 저장된 입구 카메라 캡처 이미지 정보
     @GetMapping("/latest_image")
     public ResponseEntity<?> getLatestEntranceImage() {
         return ResponseEntity.ok(entranceService.getLatestEntranceImage());
     }
 
-    // OCR 수신
+    // OCR 모듈(라즈베리파이/서버 AI)이 추출한 차량 번호판 문자열 + 부가 데이터
     @PostMapping("/ocr")
     public ResponseEntity<?> ocr(@RequestBody OcrEntryRequestDTO dto) {
         return ResponseEntity.ok(entranceService.receiveOcr(dto));
@@ -35,13 +36,13 @@ public class EntranceController {
         return ResponseEntity.ok().build();
     }
 
-    // 최근 입차 조회
+    // “가장 최근 입차(또는 OCR 인식 결과 기반)의 대표 정보”
     @GetMapping("/latest")
     public ResponseEntity<EntranceResponseDTO> latest() {
         return ResponseEntity.ok(entranceService.getLatestEntrance());
     }
 
-    // 작업 전체 목록
+    // work_info 테이블 기반의 전체 작업 기록
     @GetMapping("/work/list")
     public List<WorkInfoResponseDTO> workInfolist() {
         return entranceService.findAll();
@@ -52,7 +53,7 @@ public class EntranceController {
     public List<WorkInfoResponseDTO> workInfoToday() {
         return entranceService.findAllToday();
     }
-
+    // “한 화면에서 모든 정보 보여주는 리스트”
     @GetMapping("/work/totalList")
     public List<WorkInfoTotalListResponse> workInfoTotalList() {
         return entranceService.workInfoTotalList();
