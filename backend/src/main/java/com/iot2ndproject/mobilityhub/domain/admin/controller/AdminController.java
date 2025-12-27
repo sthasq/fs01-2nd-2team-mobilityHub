@@ -2,6 +2,7 @@ package com.iot2ndproject.mobilityhub.domain.admin.controller;
 
 import com.iot2ndproject.mobilityhub.domain.admin.dto.*;
 import com.iot2ndproject.mobilityhub.domain.admin.service.AdminService;
+import com.iot2ndproject.mobilityhub.domain.user.dto.UserProfileDTO;
 import com.iot2ndproject.mobilityhub.domain.user.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -48,7 +49,8 @@ public class AdminController {
                 .body(Map.of(
                         "accessToken", jwtToken,
                         "adminId", response.getAdminId(),
-                        "roles", response.getRole()
+                        "roles", response.getRole(),
+                        "email", response.getEmail()
                 ));
     }
 

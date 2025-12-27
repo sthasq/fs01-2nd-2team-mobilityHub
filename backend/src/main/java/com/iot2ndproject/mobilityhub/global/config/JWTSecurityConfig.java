@@ -43,7 +43,7 @@ public class JWTSecurityConfig {
         http.csrf(csrf->csrf.disable())
                 //사용자정의필터를 어느 위치에서 실행할건지 등록하는 작업 필요
                 //특정 필터가 실행되기 전에 실행되도록 작업
-//                .addFilterBefore(new CustomJWTFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new CustomJWTFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/user/create","/user/login",  "/carwash/select", "/api/entry/ocr", "/admin/login").permitAll()
 //                        .requestMatchers("/customer/create").hasAnyRole("ADMIN")
