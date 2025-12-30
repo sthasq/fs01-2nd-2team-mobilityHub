@@ -26,4 +26,7 @@ public class EntranceResponseDTO {
 
     private LocalDateTime time;
     private boolean match;
+
+    public void setApproved(boolean b) {
+    }
 }

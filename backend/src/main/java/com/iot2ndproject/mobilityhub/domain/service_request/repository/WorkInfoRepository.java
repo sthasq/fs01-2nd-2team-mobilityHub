@@ -16,9 +16,16 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
     Optional<WorkInfoEntity>
     findTopByWork_WorkIdOrderByRequestTimeDesc(Integer workId);
 
+    Optional<WorkInfoEntity>
+    findTopByImage_ImageIdOrderByRequestTimeDesc(Long imageId);
+
+    Optional<WorkInfoEntity>
+    findTopByImageIsNotNullOrderByRequestTimeDesc();
+
     // 금일 입차
     List<WorkInfoEntity>
     findByEntryTimeBetween(LocalDateTime start, LocalDateTime end);
+
 
     // 금일 출차
     List<WorkInfoEntity>
@@ -29,5 +36,7 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
     List<WorkInfoEntity> findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(String userId);
 
     List<WorkInfoEntity> findByRequestTimeBetween(LocalDateTime start, LocalDateTime end);
+
+    List<WorkInfoEntity> findByEntryTimeIsNotNullAndEntryTimeBetween(LocalDateTime start, LocalDateTime end);
 }
 

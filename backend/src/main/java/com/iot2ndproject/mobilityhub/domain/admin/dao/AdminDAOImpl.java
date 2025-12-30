@@ -2,6 +2,8 @@ package com.iot2ndproject.mobilityhub.domain.admin.dao;
 
 import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
 import com.iot2ndproject.mobilityhub.domain.admin.repository.AdminRepository;
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
+import com.iot2ndproject.mobilityhub.domain.car.repository.UserCarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminDAOImpl implements AdminDAO {
     private final AdminRepository adminRepository;
+    private final UserCarRepository userCarRepository;
 
     @Override
     public List<AdminEntity> findAll() {
@@ -38,4 +41,13 @@ public class AdminDAOImpl implements AdminDAO {
     public AdminEntity save(AdminEntity entity){
         return adminRepository.save(entity);
     }
-}
+
+
+
+        @Override
+        public List<UserCarEntity> findAllRegisteredCars() {
+            return userCarRepository.findAll();
+        }
+    }
+
+

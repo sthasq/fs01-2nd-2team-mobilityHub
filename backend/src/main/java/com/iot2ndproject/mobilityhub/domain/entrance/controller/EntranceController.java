@@ -86,4 +86,14 @@ public class EntranceController {
         entranceService.updateOcrNumber(imageId, dto.getCarNumber());
         return ResponseEntity.ok().build();
     }
+
+
+    @PostMapping("/approve/registered/{userCarId}")
+    public ResponseEntity<Void> approveRegisteredCar(
+            @PathVariable Long userCarId) {
+
+        entranceService.approveRegisteredCar(userCarId);
+        return ResponseEntity.ok().build();
+    }
+    
 }

@@ -14,6 +14,6 @@ public interface UserCarRepository extends JpaRepository<UserCarEntity,Long> {
 
     Optional<UserCarEntity> findByUser_UserIdAndCar_CarNumber(String userId, String carNumber);
     UserCarEntity findByCarCarNumber(String carNumber);
-
+    List<UserCarEntity> findAll();
     Optional<UserCarEntity> findByCar_CarNumber(String carNumber);
 }

@@ -1,5 +1,6 @@
 package com.iot2ndproject.mobilityhub.domain.entrance.service;
 
+import com.iot2ndproject.mobilityhub.domain.admin.dto.RegisteredCarResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.entrance.dto.*;
 
 import java.util.List;
@@ -12,9 +13,10 @@ public interface EntranceService {
 
     EntranceResponseDTO getLatestEntrance();
 
-    // 최신 이미지
-    Object getLatestEntranceImage();
 
+    // 최신 이미지
+
+    EntranceResponseDTO getLatestEntranceImage();
     // 오늘 입차/출차
     List<WorkInfoResponseDTO> getTodayEntryDTO();
     List<WorkInfoResponseDTO> getTodayExitDTO();
@@ -24,7 +26,9 @@ public interface EntranceService {
     List<WorkInfoResponseDTO> findAllToday();
 
     List<WorkInfoTotalListResponse> workInfoTotalList();
-
+    List<RegisteredCarResponseDTO> getRegisteredCarsForEntrance();
     // 번호판 수정
     void updatePlateNumber(Long workInfoId, String newCarNumber);
+
+    void approveRegisteredCar(Long userCarId);
 }

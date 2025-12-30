@@ -1,6 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.admin.dao;
 
 import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
 
 import java.util.List;
 
@@ -17,4 +18,7 @@ public interface AdminDAO {
 
     // 임시로 만들어둠(비밀번호만 암호화한 상태로 변경시키기)
     AdminEntity save(AdminEntity admin);
+
+    // 입출구
+    List<UserCarEntity> findAllRegisteredCars();
 }

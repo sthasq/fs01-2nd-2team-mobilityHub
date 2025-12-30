@@ -6,6 +6,6 @@ public interface ImageDAO {
     ImageEntity save(ImageEntity image);
 
     ImageEntity findById(Long imageId);
-
+    
     ImageEntity findLatest();
 }

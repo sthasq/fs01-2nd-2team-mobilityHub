@@ -7,8 +7,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ImageDAOImpl implements ImageDAO{
+public class ImageDAOImpl implements ImageDAO {
     private final ImageRepository imageRepository;
+
     @Override
     public ImageEntity save(ImageEntity image) {
         return imageRepository.save(image);
@@ -22,6 +23,8 @@ public class ImageDAOImpl implements ImageDAO{
 
     @Override
     public ImageEntity findLatest() {
-        return null;
+        return imageRepository.findTopByOrderByRegDateDesc()
+                .orElse(null);
     }
+
 }

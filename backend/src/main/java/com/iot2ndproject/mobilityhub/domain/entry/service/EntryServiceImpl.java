@@ -3,6 +3,7 @@ package com.iot2ndproject.mobilityhub.domain.entry.service;
 import com.iot2ndproject.mobilityhub.domain.entry.dao.EntryDAO;
 import com.iot2ndproject.mobilityhub.domain.entrance.dto.EntranceEntryViewDTO;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
+import com.iot2ndproject.mobilityhub.global.mqtt.MyPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ import java.util.List;
 public class EntryServiceImpl implements EntryService {
 
     private final EntryDAO entryDAO;
-
+    private final MyPublisher mqttPublisher;
     /**
      * 📊 금일 입차 조회
      */
@@ -49,19 +50,30 @@ public class EntryServiceImpl implements EntryService {
     }
 
     /**
-     * ✅ 입차 승인
+     *  입차 승인
      */
     @Override
-    public void approveEntrance(Long workId) {
+    public void approveEntrance(Long id) {
 
-        WorkInfoEntity workInfo = entryDAO.findWorkInfoById(workId)
-                .orElseThrow(() -> new IllegalArgumentException("입차 정보 없음"));
+        WorkInfoEntity workInfo = entryDAO.findWorkInfoById(id).orElse(null);
 
-        // 승인 시점 확정
-        if (workInfo.getEntryTime() == null) {
+        //  work_info 없으면 새로 생성 (OCR만 있는 상태)
+        if (workInfo == null) {
+            workInfo = new WorkInfoEntity();
             workInfo.setEntryTime(LocalDateTime.now());
+            entryDAO.save(workInfo);
+        } else {
+            if (workInfo.getEntryTime() == null) {
+                workInfo.setEntryTime(LocalDateTime.now());
+                entryDAO.save(workInfo);
+            }
         }
 
-        entryDAO.save(workInfo);
+        // 🔓 게이트 열기
+        mqttPublisher.sendToMqtt(
+                "open",
+                "parking/web/entrance/approve"
+        );
     }
+
 }

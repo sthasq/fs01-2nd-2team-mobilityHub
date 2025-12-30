@@ -1,10 +1,13 @@
 package com.iot2ndproject.mobilityhub.domain.service_request.dao;
 
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
+import com.iot2ndproject.mobilityhub.domain.entrance.dto.WorkInfoResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.repository.WorkInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +38,12 @@ public class WorkInfoDAOImpl implements WorkInfoDAO {
         return workInfoRepository.save(workInfo);
     }
 
+    @Override
+    public List<WorkInfoEntity> findByEntryTimeIsNotNullAndEntryTimeBetween(LocalDateTime start, LocalDateTime end) {
+        return workInfoRepository
+                .findByEntryTimeIsNotNullAndEntryTimeBetween(start, end);
+    }
+
     /**
      * workInfoId로 단건 조회
      */
@@ -43,11 +52,24 @@ public class WorkInfoDAOImpl implements WorkInfoDAO {
         return workInfoRepository.findById(workInfoId);
     }
 
+
+
+
     /**
      * 전체 작업 목록 조회
      */
     @Override
     public List<WorkInfoEntity> findAll() {
         return workInfoRepository.findAll();
+    }
+
+    @Override
+    public boolean existsByUserCarAndEntryTimeBetween(UserCarEntity userCar, LocalDateTime localDateTime, LocalDateTime localDateTime1) {
+        return false;
+    }
+
+    @Override
+    public List<WorkInfoEntity> findByEntryTimeBetween(LocalDateTime start, LocalDateTime end) {
+        return List.of();
     }
 }

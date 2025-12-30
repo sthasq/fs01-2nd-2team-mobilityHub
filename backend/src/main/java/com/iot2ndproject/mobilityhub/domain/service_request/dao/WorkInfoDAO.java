@@ -1,7 +1,9 @@
 package com.iot2ndproject.mobilityhub.domain.service_request.dao;
 
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +19,10 @@ public interface WorkInfoDAO {
      */
     WorkInfoEntity save(WorkInfoEntity workInfo);
 
+    List<WorkInfoEntity> findByEntryTimeIsNotNullAndEntryTimeBetween(
+            LocalDateTime start,
+            LocalDateTime end
+    );
     /**
      * workInfoId로 단건 조회
      */
@@ -26,4 +32,8 @@ public interface WorkInfoDAO {
      * 전체 작업 목록
      */
     List<WorkInfoEntity> findAll();
+
+    boolean existsByUserCarAndEntryTimeBetween(UserCarEntity userCar, LocalDateTime localDateTime, LocalDateTime localDateTime1);
+
+    List<WorkInfoEntity> findByEntryTimeBetween(LocalDateTime start, LocalDateTime end);
 }

@@ -25,4 +25,5 @@ public class EntryController {
         entryService.approveEntrance(workId);
         return ResponseEntity.ok().build();
     }
+
 }
