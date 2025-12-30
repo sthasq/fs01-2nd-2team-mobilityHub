@@ -9,7 +9,6 @@ import MainSection from "./components/pages/MainSection";
 import EntranceExitSection from "./components/pages/EntranceExitSection";
 import StatisticsSection from "./components/pages/StatisticsSection";
 import CarWashSection from "./components/pages/CarWashSection";
-import LicenseModal from "./components/pages/LicenseModal";
 import RepairSection from "./components/pages/RepairSection";
 import AdminSection from "./components/pages/AdminSection";
 import ParkingSection from "./components/pages/ParkingSection";
@@ -29,7 +28,6 @@ function App() {
               <Route path="/main" element={<MainSection />} />
               <Route path="/statistics" element={<StatisticsSection />} />
               <Route path="/carwash" element={<CarWashSection />} />
-              <Route path="/statistics" element={<LicenseModal />} />
               <Route path="/admin" element={<AdminSection />} />
               <Route path="/repair" element={<RepairSection />} />
               <Route path="/parking" element={<ParkingSection />} />

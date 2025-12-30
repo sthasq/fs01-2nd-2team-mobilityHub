@@ -13,6 +13,9 @@ const useMqtt = (brokerUrl) => {
   // 🟢 캡처된 정지 이미지
   const [capturedImage, setCapturedImage] = useState("");
 
+  // 🔴 YOLO 번호판 박스 좌표
+  const [yoloBox, setYoloBox] = useState(null);
+
   useEffect(() => {
     // 브로커 연결
     const mqttClient = mqtt.connect(brokerUrl, {
@@ -84,6 +87,7 @@ const useMqtt = (brokerUrl) => {
         mqttClient.publish("parking/web/carwash/cam", "stop");
         mqttClient.publish("parking/web/repair/cam", "stop");
         mqttClient.publish("parking/web/entrance/cam", "stop");
+
         mqttClient.end();
         setConnectStatus("connecting");
         console.log("MQTT연결종료");
@@ -107,6 +111,7 @@ const useMqtt = (brokerUrl) => {
     connectStatus,
     imageSrc, // 실시간 CCTV
     capturedImage, // 📸 캡처 이미지
+    yoloBox,
     publish,
   };
 };
