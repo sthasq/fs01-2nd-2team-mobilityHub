@@ -74,17 +74,19 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public List<RegisteredCarResponseDTO> getRegisteredCars() {
+    public List<RegisteredCarResponseDTO> getRegisteredCarsForEntrance() {
 
-        return adminDAO.findAllRegisteredCars()
+        return adminDAO.findRegisteredCarsForEntrance()
                 .stream()
-                .map(uc ->
-                        new RegisteredCarResponseDTO(
-                                uc.getId(),
-                        uc.getUser().getUserName(),
-                        uc.getCar().getCarNumber()
+                .map(car -> new RegisteredCarResponseDTO(
+                        car.getId(),
+                        car.getUser().getUserName(),
+                        car.getCar().getCarNumber()
                 ))
                 .toList();
     }
 
-}
+
+    }
+
+

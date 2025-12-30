@@ -38,16 +38,16 @@ public class AdminDAOImpl implements AdminDAO {
     }
 
     @Override
-    public AdminEntity save(AdminEntity entity){
+    public AdminEntity save(AdminEntity entity) {
         return adminRepository.save(entity);
     }
 
-
-
-        @Override
-        public List<UserCarEntity> findAllRegisteredCars() {
-            return userCarRepository.findAll();
-        }
+    @Override
+    public List<UserCarEntity> findRegisteredCarsForEntrance() {
+        return userCarRepository.findAll();
     }
+}
+
+
 
 

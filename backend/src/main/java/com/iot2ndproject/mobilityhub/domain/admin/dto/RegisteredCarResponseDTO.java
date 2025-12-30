@@ -12,6 +12,5 @@ public class RegisteredCarResponseDTO {
     private String userName;
     private String carNumber;
 
-    public RegisteredCarResponseDTO(String userName, String carNumber, Long id) {
-    }
+
 }

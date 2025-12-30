@@ -3,7 +3,9 @@ package com.iot2ndproject.mobilityhub.domain.admin.controller;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminPassChangeRequest;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminUpdateRequest;
+import com.iot2ndproject.mobilityhub.domain.admin.dto.RegisteredCarResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.admin.service.AdminService;
+import com.iot2ndproject.mobilityhub.domain.entrance.service.EntranceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +17,9 @@ import java.util.Map;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
-    private final AdminService adminService;
 
+    private final AdminService adminService;
+    private final EntranceService entranceService;
     // GET : 관리자 전체조회
     @GetMapping("/list")
     public List<AdminResponseDTO> getAllAdmins() {
@@ -53,4 +56,9 @@ public class AdminController {
 
         return ResponseEntity.ok("비밀번호 변경 완료");
     }
+    @GetMapping("/registered-cars")
+    public List<RegisteredCarResponseDTO> registeredCars() {
+        return entranceService.getRegisteredCarsForEntrance();
+    }
+
 }

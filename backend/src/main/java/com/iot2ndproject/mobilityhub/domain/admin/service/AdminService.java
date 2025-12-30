@@ -23,7 +23,8 @@ public interface AdminService {
 
     void updatePassword(String adminId, String newPassword);
 
-    List<RegisteredCarResponseDTO> getRegisteredCars();
-
-
+    List<RegisteredCarResponseDTO> getRegisteredCarsForEntrance();
 }
+
+
+

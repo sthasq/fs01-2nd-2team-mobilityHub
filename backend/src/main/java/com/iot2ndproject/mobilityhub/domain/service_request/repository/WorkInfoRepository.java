@@ -1,6 +1,5 @@
 package com.iot2ndproject.mobilityhub.domain.service_request.repository;
 
-import com.iot2ndproject.mobilityhub.domain.entrance.dto.EntranceEntryViewDTO;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -31,7 +30,7 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
     // carNumber로 진행 중인 최신 작업 정보 조회 (work_id가 null이 아닌 것만)
     Optional<WorkInfoEntity> findTopByUserCar_Car_CarNumberAndWorkIsNotNullOrderByRequestTimeDesc(String carNumber);
 
-    Optional<EntranceEntryView> findTopByImageIsNotNullOrderByRequestTimeDesc();
+    Optional<WorkInfoEntity> findTopByImageIsNotNullOrderByRequestTimeDesc();
 
     boolean existsByImage_ImageId(Integer imageId);
 
@@ -43,5 +42,8 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
     );
 
 
+    List<WorkInfoEntity> findByEntryTimeIsNotNullAndEntryTimeBetween(LocalDateTime start, LocalDateTime end);
+
+    Optional<WorkInfoEntity> findTopByImage_ImageIdOrderByRequestTimeDesc(Long imageId);
 }
 
