@@ -444,9 +444,18 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         // RC카에 서비스 완료 신호 발행
         String carId = carNumber;
         String topic = "rccar/" + carId + "/service";
-        Map<String, String> payload = new HashMap<>();
+        Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("stage", stage.toLowerCase());
         payload.put("status", "done");
+        payload.put("workInfoId", workInfoId);
+
+        // 다음 이동 경로(route) 포함: RC카가 "서비스 완료" 수신 후 자동으로 다음 목적지로 출발할 수 있도록
+        String workType = (workInfo.getWork() != null) ? workInfo.getWork().getWorkType() : null;
+        String normalizedWorkType = (workType != null) ? workType.trim().toLowerCase() : "";
+        boolean hasPark = normalizedWorkType.contains("park");
+        int parkingNodeId = resolveParkingNodeId(workInfo);
+        payload.put("workType", normalizedWorkType);
+        payload.put("route", routeService.calculateNextRouteAfterService(stage, hasPark, parkingNodeId));
 
         try {
             String jsonPayload = objectMapper.writeValueAsString(payload);
@@ -454,6 +463,145 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
             System.out.println(">>> 서비스 완료 신호 발행: " + topic + " | " + jsonPayload);
         } catch (Exception e) {
             throw new RuntimeException("MQTT 신호 발행 실패: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> callVehicle(Long workInfoId) {
+        if (workInfoId == null) {
+            throw new IllegalArgumentException("workInfoId is required");
+        }
+
+        // WorkInfoEntity 조회
+        Optional<WorkInfoEntity> optionalWorkInfo = serviceRequestDAO.findById(workInfoId);
+        if (optionalWorkInfo.isEmpty()) {
+            throw new IllegalArgumentException("작업 정보를 찾을 수 없습니다.");
+        }
+
+        WorkInfoEntity workInfo = optionalWorkInfo.get();
+
+        // car_state(=parking_map_node) 기반으로 주차 여부 판단
+        if (workInfo.getCarState() == null) {
+            throw new IllegalArgumentException("차량 위치 정보가 없습니다.");
+        }
+
+        int currentNodeId = workInfo.getCarState().getNodeId();
+        String nodeName = workInfo.getCarState().getNodeName();
+
+        // 주차 노드: 5(주차_1), 7(주차_2), 9(주차_3)
+        if (currentNodeId != 5 && currentNodeId != 7 && currentNodeId != 9) {
+            String currentLocation = nodeName != null ? nodeName : "알 수 없음";
+            throw new IllegalArgumentException("주차 구역에 있는 차량만 호출할 수 있습니다. 현재 위치: " + currentLocation);
+        }
+
+        // 차량 번호 추출
+        String carNumber = null;
+        if (workInfo.getUserCar() != null && workInfo.getUserCar().getCar() != null) {
+            carNumber = workInfo.getUserCar().getCar().getCarNumber();
+        }
+        if (carNumber == null) {
+            throw new IllegalArgumentException("차량 번호를 찾을 수 없습니다.");
+        }
+
+        // 주차 노드에서 출구까지 경로 계산
+        List<Integer> exitRoute = routeService.calculateExitRoute(currentNodeId);
+
+        // RC카에 호출 신호 발행
+        String topic = "rccar/" + carNumber + "/call";
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("action", "call");
+        payload.put("route", exitRoute);
+        payload.put("workInfoId", workInfoId);
+
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(payload);
+            mqttPublisher.sendToMqtt(jsonPayload, topic);
+            System.out.println(">>> 차량 호출 신호 발행: " + topic + " | " + jsonPayload);
+        } catch (Exception e) {
+            throw new RuntimeException("MQTT 차량 호출 신호 발행 실패: " + e.getMessage(), e);
+        }
+
+        return Map.of(
+                "ok", true,
+                "workInfoId", workInfoId,
+                "carNumber", carNumber,
+                "currentNodeId", currentNodeId,
+                "route", exitRoute
+        );
+    }
+
+    @Override
+    public void publishRouteCommand(ServiceRequestDTO dto) {
+        if (dto == null || dto.getId() == null) {
+            throw new IllegalArgumentException("workInfoId is required");
+        }
+
+        // WorkInfoEntity 기준으로 workType/차량번호를 정확히 조회
+        WorkInfoEntity workInfo = serviceRequestDAO.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("작업 정보를 찾을 수 없습니다: workInfoId=" + dto.getId()));
+
+        String carNumber = null;
+        if (workInfo.getUserCar() != null && workInfo.getUserCar().getCar() != null) {
+            carNumber = workInfo.getUserCar().getCar().getCarNumber();
+        }
+        if (carNumber == null) {
+            throw new IllegalStateException("차량 번호를 찾을 수 없습니다.");
+        }
+
+        String workType = (workInfo.getWork() != null) ? workInfo.getWork().getWorkType() : null;
+        if (workType == null || workType.isBlank()) {
+            throw new IllegalStateException("workType을 찾을 수 없습니다.");
+        }
+
+        String normalizedWorkType = workType.trim().toLowerCase();
+        List<Integer> route;
+        if ("park".equals(normalizedWorkType)) {
+            // park 단독은 "주차 노드에서 대기"가 목적이므로, 할당된 주차 구역(P01/P02/P03)에 맞춰 경로를 보냄
+            int parkingNodeId = resolveParkingNodeId(workInfo);
+            route = routeService.calculateParkingRoute(parkingNodeId);
+        } else {
+            // carwash/repair/복합은 1차 목적지(세차/정비)에서 대기하도록 초기 경로만 발행
+            route = routeService.calculateRoute(workType);
+        }
+
+        String topic = "rccar/" + carNumber + "/command";
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("workInfoId", workInfo.getId());
+        payload.put("workType", normalizedWorkType);
+        payload.put("route", route);
+
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(payload);
+            mqttPublisher.sendToMqtt(jsonPayload, topic);
+            System.out.println(">>> RC카 경로 명령 발행: " + topic + " | " + jsonPayload);
+        } catch (Exception e) {
+            throw new RuntimeException("MQTT 경로 명령 발행 실패: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * WorkInfoEntity에 할당된 주차 섹터(P01/P02/P03)를 parking_map_node(5/7/9)로 매핑
+     * - P01 -> 주차_1(nodeId=5)
+     * - P02 -> 주차_2(nodeId=7)
+     * - P03 -> 주차_3(nodeId=9)
+     *
+     * 섹터가 없거나 알 수 없으면 기본값(주차_1)을 사용.
+     */
+    private int resolveParkingNodeId(WorkInfoEntity workInfo) {
+        try {
+            if (workInfo == null || workInfo.getSectorId() == null || workInfo.getSectorId().getSectorId() == null) {
+                return 5;
+            }
+            String sectorId = workInfo.getSectorId().getSectorId().trim().toUpperCase();
+            return switch (sectorId) {
+                case "P01" -> 5;
+                case "P02" -> 7;
+                case "P03" -> 9;
+                default -> 5;
+            };
+        } catch (Exception ignored) {
+            return 5;
         }
     }
 }

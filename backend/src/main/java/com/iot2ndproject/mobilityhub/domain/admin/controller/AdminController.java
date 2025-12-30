@@ -3,7 +3,6 @@ package com.iot2ndproject.mobilityhub.domain.admin.controller;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminPassChangeRequest;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminUpdateRequest;
-import com.iot2ndproject.mobilityhub.domain.admin.dto.RegisteredCarResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.admin.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -54,12 +53,4 @@ public class AdminController {
 
         return ResponseEntity.ok("비밀번호 변경 완료");
     }
-
-    //입출구 차량번호 조회 리스트
-
-    @GetMapping("/registered-cars")
-    public List<RegisteredCarResponseDTO> registeredCars() {
-        return adminService.getRegisteredCars();
-    }
-
 }

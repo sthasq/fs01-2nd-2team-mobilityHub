@@ -93,7 +93,7 @@ public class MqttService {
                 return;
             }
 
-            WorkInfoEntity workInfo = workInfos.get(0); // 핵심
+            WorkInfoEntity workInfo = workInfos.get(0); // ✅ 핵심
 
 
 

@@ -156,32 +156,30 @@ def on_message(client, userdata, message):
             data = json.loads(payload_str)
             stage = data.get("stage", "")
             status = data.get("status", "")
+            next_route = data.get("route")
+            next_work_type = data.get("workType")
             
             print(f"✅ 서비스 완료 신호 수신: {stage} - {status}")
             
             if status == "done" and is_waiting_service:
                 is_waiting_service = False
                 auto_forward_mode = True  # 자동 전진 모드 활성화
-                
-                # 다음 단계로 이동 (주차장으로)
-                if "park" in current_work_type:
-                    print("🚗 주차장으로 자동 이동 시작")
-                    # 주차장 경로는 이미 current_route에 포함되어 있음
-                    # 다음 노드부터 계속 진행
+
+                # (선택) workType 갱신
+                if isinstance(next_work_type, str) and next_work_type.strip():
+                    current_work_type = next_work_type.strip().lower()
+
+                # 백엔드에서 내려준 다음 경로로 교체
+                if isinstance(next_route, list) and len(next_route) > 0:
+                    current_route = next_route
+                    current_route_index = 0
+                    current_car_id = car_id
+                    print(f"🚗 다음 경로 수신(자동 이동): {current_route}")
                 else:
-                    # 세차/정비만 선택한 경우 출구로
-                    print("🚗 출구로 자동 이동 시작")
-                    # 출구 경로 계산 (현재 위치에서 출구까지)
-                    # 간단하게 마지막 노드가 출구(20)인지 확인
-                    if current_route and current_route[-1] == 20:
-                        # 이미 출구 경로에 있음
-                        pass
-                    else:
-                        # 출구 경로 추가 필요 (간단하게 18, 19, 20 추가)
-                        current_route = current_route + [18, 19, 20]
-                        current_route_index = len(current_route) - 3
-                
-                # 자동 전진 시작
+                    print("⚠️  다음 경로(route)가 없어 자동 이동을 시작할 수 없습니다.")
+                    return
+
+                # 자동 전진 시작(스레드)
                 if not is_running:
                     is_running = True
                     thread = threading.Thread(target=follow_route_with_node_detection, daemon=True)

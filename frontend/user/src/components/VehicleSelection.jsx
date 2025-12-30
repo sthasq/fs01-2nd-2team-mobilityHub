@@ -26,7 +26,24 @@ export default function VehicleSelection({ isLogin }) {
 
   const loadVehicles = async (id) => {
     try {
-      const list = await fetchUserCars(id);
+      const data = await fetchUserCars(id);
+      console.log("받은 차량 데이터:", data);
+      
+      // 데이터가 배열인지 확인
+      let list = data;
+      
+      // 만약 data가 객체이고 배열을 포함하고 있다면
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        // 일반적인 백엔드 응답 구조 확인
+        list = data.data || data.list || data.cars || data.carList || [];
+      }
+      
+      // list가 배열이 아니면 빈 배열로 설정
+      if (!Array.isArray(list)) {
+        console.warn("차량 데이터가 배열이 아닙니다:", list);
+        list = [];
+      }
+      
       const mapped = list.map((carNumber) => ({
         id: carNumber,
         plateNumber: carNumber,
@@ -34,7 +51,7 @@ export default function VehicleSelection({ isLogin }) {
       }));
       setVehicles(mapped);
     } catch (e) {
-      console.error(e);
+      console.error("차량 목록 로드 에러:", e);
       alert("차량 목록을 불러올 수 없습니다. 다시 로그인해주세요.");
     }
   };

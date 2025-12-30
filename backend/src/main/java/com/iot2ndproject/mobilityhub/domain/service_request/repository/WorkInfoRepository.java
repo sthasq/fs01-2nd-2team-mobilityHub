@@ -16,16 +16,9 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
     Optional<WorkInfoEntity>
     findTopByWork_WorkIdOrderByRequestTimeDesc(Integer workId);
 
-    Optional<WorkInfoEntity>
-    findTopByImage_ImageIdOrderByRequestTimeDesc(Long imageId);
-
-    Optional<WorkInfoEntity>
-    findTopByImageIsNotNullOrderByRequestTimeDesc();
-
     // 금일 입차
     List<WorkInfoEntity>
     findByEntryTimeBetween(LocalDateTime start, LocalDateTime end);
-
 
     // 금일 출차
     List<WorkInfoEntity>
@@ -35,8 +28,20 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
 
     List<WorkInfoEntity> findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(String userId);
 
-    List<WorkInfoEntity> findByRequestTimeBetween(LocalDateTime start, LocalDateTime end);
+    // carNumber로 진행 중인 최신 작업 정보 조회 (work_id가 null이 아닌 것만)
+    Optional<WorkInfoEntity> findTopByUserCar_Car_CarNumberAndWorkIsNotNullOrderByRequestTimeDesc(String carNumber);
 
-    List<WorkInfoEntity> findByEntryTimeIsNotNullAndEntryTimeBetween(LocalDateTime start, LocalDateTime end);
+    Optional<EntranceEntryView> findTopByImageIsNotNullOrderByRequestTimeDesc();
+
+    boolean existsByImage_ImageId(Integer imageId);
+
+    // 오늘 들어온 요청만 리스트로 만들기
+    // 이거 사용하려면 service단에서 start와 end 선언해야함
+    List<WorkInfoEntity> findByRequestTimeBetween(
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
+
 }
 

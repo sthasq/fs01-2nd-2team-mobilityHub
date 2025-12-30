@@ -2,10 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Car, CheckCircle, XCircle } from "lucide-react";
 
 import "../style/ParkingSection.css"; // CSS 분리
+import "../../App.css";
 import { workInfoTotalList } from "../../api/workInfoAPI";
+import useMqtt from "../hook/useMqtt";
 
+const BROKER_URL = "ws://192.168.137.1:9001";
 export default function ParkingSection() {
   const [workTotalList, setWorkTotalList] = useState([]);
+  const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
 
   useEffect(() => {
     workInfoTotalList()
@@ -14,6 +18,12 @@ export default function ParkingSection() {
       })
       .catch((err) => console.error("조회실패: ", err));
   }, []);
+
+  useEffect(() => {
+    if (connectStatus === "connected") {
+      publish("parking/web/parkingzone/cam", "start");
+    }
+  }, [connectStatus, publish]);
 
   console.log(workTotalList);
 
@@ -49,26 +59,26 @@ export default function ParkingSection() {
   });
 
   return (
-    <div className="parking-section p-6 space-y-6">
+    <div className="page">
       {/* 통계 카드 */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-content">
+      <div className="status-card">
+        {/* <div className="status-component">
+          <div className="card-item">
             <div>
-              <p className="stat-label">전체 주차면</p>
-              <p className="stat-value">{sectors.length}</p>
+              <p className="text">전체 주차면</p>
+              <p className="count">{sectors.length}</p>
             </div>
             <div className="stat-icon bg-gray">
               <Car />
             </div>
           </div>
-        </div>
+        </div> */}
 
-        <div className="stat-card">
-          <div className="stat-content">
+        <div className="status-component">
+          <div className="card-item">
             <div>
-              <p className="stat-label">사용중</p>
-              <p className="stat-value text-red">{countParking}대</p>
+              <p className="text">사용중</p>
+              <p className="stat-value text-red">{countParking} 대</p>
             </div>
             <div className="stat-icon bg-red">
               <XCircle />
@@ -76,11 +86,11 @@ export default function ParkingSection() {
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-content">
+        <div className="status-component">
+          <div className="card-item">
             <div>
-              <p className="stat-label">사용가능</p>
-              <p className="stat-value text-green">{sectors.length - countParking}면</p>
+              <p className="text">사용가능</p>
+              <p className="stat-value text-green">{sectors.length - countParking} 면</p>
             </div>
             <div className="stat-icon bg-green">
               <CheckCircle />
@@ -88,10 +98,10 @@ export default function ParkingSection() {
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-content">
+        <div className="status-component">
+          <div className="card-item">
             <div>
-              <p className="stat-label">점유율</p>
+              <p className="text">점유율</p>
               <p className="stat-value text-blue">
                 {Math.round((countParking / sectors.length) * 100)} %
               </p>
@@ -107,9 +117,11 @@ export default function ParkingSection() {
       <div className="main-grid">
         {/* CCTV 화면 */}
         <div className="cctv-container">
-          <div className="card cctv-box">
-            <div className="cctv-placeholder">📷 CCTV 스트림 대기중</div>
-          </div>
+          {imageSrc ? (
+            <img src={imageSrc} alt="camera" />
+          ) : (
+            <div className="cctv-placeholder">No Camera</div>
+          )}
         </div>
 
         {/* 주차 공간 리스트 */}
