@@ -31,6 +31,9 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
     // carNumber로 진행 중인 최신 작업 정보 조회 (work_id가 null이 아닌 것만)
     Optional<WorkInfoEntity> findTopByUserCar_Car_CarNumberAndWorkIsNotNullOrderByRequestTimeDesc(String carNumber);
 
+    // 특정 노드(예: 세차)에서 대기 중인 최신 작업 조회
+    Optional<WorkInfoEntity> findTopByCarState_NodeIdAndWorkIsNotNullOrderByRequestTimeDesc(Integer nodeId);
+
     // 오늘 들어온 요청만 리스트로 만들기
     // 이거 사용하려면 service단에서 start와 end 선언해야함
     List<WorkInfoEntity> findByRequestTimeBetween(
@@ -49,4 +52,3 @@ public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> 
 //             LocalDateTime end
 //     );
 }
-

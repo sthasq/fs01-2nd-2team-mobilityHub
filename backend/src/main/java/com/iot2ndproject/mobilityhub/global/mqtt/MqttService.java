@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iot2ndproject.mobilityhub.domain.entrance.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.entrance.repository.ImageRepository;
+import com.iot2ndproject.mobilityhub.domain.service_request.service.ServiceRequestService;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.ParkingMapNodeEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
@@ -23,11 +24,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MqttService {
     
+    private static final int CARWASH_NODE_ID = 10;
     private final WorkInfoRepository workInfoRepository;
     private final ParkingMapNodeRepository parkingMapNodeRepository;
     private final MyPublisher mqttPublisher;
     private final ObjectMapper objectMapper;
     private final ImageRepository imageRepository;
+    private final ServiceRequestService serviceRequestService;
 
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<String> message) {
@@ -39,10 +42,9 @@ public class MqttService {
         // rccar/+/position 토픽 처리
         if (topic != null && topic.startsWith("rccar/") && topic.endsWith("/position")) {
             handleRcCarPosition(topic, payload);
-        } else {
-            // 기타 토픽 처리 (기존 로직)
-            // TODO: 다른 토픽별 비즈니스 로직 처리
+            return;
         }
+
         if ("parking/web/entrance/image".equals(topic)) {
             handleEntranceImage(payload);
             return;
@@ -52,6 +54,10 @@ public class MqttService {
             System.out.println(topic);
             System.out.println(payload);
             return;
+        }
+
+        if ("parking/web/carwash".equals(topic)) {
+            handleCarwashSignal(payload);
         }
 
     }
@@ -181,6 +187,40 @@ public class MqttService {
             e.printStackTrace();
         }
     }
+
+    private void handleCarwashSignal(String payload) {
+        if (payload == null) {
+            return;
+        }
+        String normalized = payload.trim().toLowerCase();
+        if (!"end".equals(normalized)) {
+            return;
+        }
+
+        Optional<WorkInfoEntity> optionalWorkInfo =
+                workInfoRepository.findTopByCarState_NodeIdAndWorkIsNotNullOrderByRequestTimeDesc(CARWASH_NODE_ID);
+
+        if (optionalWorkInfo.isEmpty()) {
+            System.err.println("세차 완료 신호를 수신했지만 세차 대기 중인 작업을 찾을 수 없습니다.");
+            return;
+        }
+
+        WorkInfoEntity workInfo = optionalWorkInfo.get();
+        String workType = (workInfo.getWork() != null) ? workInfo.getWork().getWorkType() : null;
+        if (workType == null || !workType.trim().toLowerCase().contains("carwash")) {
+            System.err.println("세차 완료 신호를 수신했지만 work_type이 세차가 아닙니다: " + workType);
+            return;
+        }
+
+        try {
+            int workInfoId = Math.toIntExact(workInfo.getId());
+            serviceRequestService.completeService(workInfoId, "carwash");
+            System.out.println(">>> 세차 완료 신호 처리: workInfoId=" + workInfoId + " -> RC카 이동 명령 발행");
+        } catch (Exception e) {
+            System.err.println("세차 완료 신호 처리 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
     @Transactional
     private void handleEntranceImage(String payload) {
         try {
@@ -207,4 +247,3 @@ public class MqttService {
     }
 
 }
-
