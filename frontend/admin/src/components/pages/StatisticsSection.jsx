@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../style/StatisticsSection.css";
+import "../../App.css";
 import { getRepairAmount } from "../../api/repairAPI";
 import { getTodayWorkList, getWorkInfoList } from "../../api/workInfoAPI";
 import StatisticsByDateChart from "../chart/StatisticsByDateChart";
@@ -146,34 +147,40 @@ export default function StatisticsSection() {
   console.log(thisWeek);
   /* ===================== 렌더 ===================== */
   return (
-    <div className="statistics-page">
+    <div className="page">
       {/* SUMMARY */}
-      <div className="summary-row">
-        <div className="summary-card">
-          <div>
-            <p className="summary-title">오늘 총 이용량</p>
-            <p className="summary-value">{todayWorkList.length} 건</p>
-          </div>
-          <div className="card-icon" style={{ backgroundColor: "#fef9c2" }}>
-            <Clock className="icon" style={{ color: "orange" }} />
-          </div>
-        </div>
-        <div className="summary-card">
-          <div>
-            <p className="summary-title">이번 달 매출</p>
-            <p className="summary-value">₩{total.toLocaleString("ko-KR")}</p>
-          </div>
-          <div className="card-icon" style={{ backgroundColor: "#d0fae5" }}>
-            <DollarSign className="icon" style={{ color: "#009966" }} />
+      <div className="status-card">
+        <div className="status-component">
+          <div className="card-item">
+            <div>
+              <p className="text">오늘 총 이용량</p>
+              <p className="count">{todayWorkList.length} 건</p>
+            </div>
+            <div className="card-icon" style={{ backgroundColor: "#fef9c2" }}>
+              <Clock className="icon" style={{ color: "orange" }} />
+            </div>
           </div>
         </div>
-        <div className="summary-card">
-          <div>
-            <p className="summary-title">이번 주 신규 회원</p>
-            <p className="summary-value">{thisWeek.reduce((sum, count) => sum + count, 0)} 명</p>
+        <div className="status-component">
+          <div className="card-item">
+            <div>
+              <p className="text">이번 달 매출</p>
+              <p className="count">₩ {total.toLocaleString("ko-KR")}</p>
+            </div>
+            <div className="card-icon" style={{ backgroundColor: "#d0fae5" }}>
+              <DollarSign className="icon" style={{ color: "#009966" }} />
+            </div>
           </div>
-          <div className="card-icon" style={{ backgroundColor: "#f3e8ff" }}>
-            <UserPlus className="icon" style={{ color: "purple" }} />
+        </div>
+        <div className="status-component">
+          <div className="card-item">
+            <div>
+              <p className="text">이번 주 신규 회원</p>
+              <p className="count">{thisWeek.reduce((sum, count) => sum + count, 0)} 명</p>
+            </div>
+            <div className="card-icon" style={{ backgroundColor: "#f3e8ff" }}>
+              <UserPlus className="icon" style={{ color: "purple" }} />
+            </div>
           </div>
         </div>
       </div>

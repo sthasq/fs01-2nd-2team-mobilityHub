@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -78,47 +77,59 @@ public class MqttService {
                     payload, 
                     new TypeReference<Map<String, Object>>() {}
             );
-            int nodeId =(int) positionData.get("nodeId");
+            Object nodeIdObj = positionData.get("nodeId");
+            Integer nodeId = null;
+            if (nodeIdObj instanceof Number) {
+                nodeId = ((Number) nodeIdObj).intValue();
+            }
             String nodeName = (String) positionData.get("nodeName");
             
             System.out.println(">>> RC카 위치 신호 수신: carId=" + carId + ", nodeId=" + nodeId + ", nodeName=" + nodeName);
             
-            // carNumber로 진행 중인 최신 작업 정보 조회 (work_id가 null이 아닌 것만)
-            List<WorkInfoEntity> workInfos =
-                    workInfoRepository
-                            .findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(carId);
+            // carNumber(=topic의 carId)로 진행 중인 최신 작업 정보 조회 (work_id가 null이 아닌 것만)
+            Optional<WorkInfoEntity> optionalWorkInfo =
+                    workInfoRepository.findTopByUserCar_Car_CarNumberAndWorkIsNotNullOrderByRequestTimeDesc(carId);
 
-            if (workInfos.isEmpty()) {
+            if (optionalWorkInfo.isEmpty()) {
                 System.err.println("작업 정보를 찾을 수 없습니다: carNumber=" + carId);
                 return;
             }
 
-            WorkInfoEntity workInfo = workInfos.get(0); // ✅ 핵심
+            WorkInfoEntity workInfo = optionalWorkInfo.get();
 
+            // nodeId가 null이면(예: '건물 밖') DB의 car_state를 NULL로 저장
+            if (nodeId == null) {
+                workInfo.setCarState(null);
+                workInfoRepository.save(workInfo);
+                System.out.println(">>> WorkInfoEntity.carState 업데이트 완료: id=" + workInfo.getId() + ", nodeId=null (nodeName=" + nodeName + ")");
+                return;
+            }
 
-
-            
             // 노드 ID로 ParkingMapNodeEntity 조회
             Optional<ParkingMapNodeEntity> optionalNode = parkingMapNodeRepository.findById(nodeId);
             if (optionalNode.isEmpty()) {
                 System.err.println("노드를 찾을 수 없습니다: id=" + nodeId);
                 return;
             }
-            
+
             ParkingMapNodeEntity node = optionalNode.get();
-            
+
             // carState 업데이트
             workInfo.setCarState(node);
             // 노드가 입구/출구일 경우 entrytime/exittime도 업데이트
-            if(node.getNodeId()==1){
-                workInfo.setEntryTime(LocalDateTime.now());
-            }else if(node.getNodeId() == 20){
-                workInfo.setExitTime(LocalDateTime.now());
+            if (node.getNodeId() == 1) {
+                if (workInfo.getEntryTime() == null) {
+                    workInfo.setEntryTime(LocalDateTime.now());
+                }
+            } else if (node.getNodeId() == 20) {
+                if (workInfo.getExitTime() == null) {
+                    workInfo.setExitTime(LocalDateTime.now());
+                }
             }
             workInfoRepository.save(workInfo);
 
-            System.out.println(">>> WorkInfoEnrity.carState 업데이트 완료:id=" + workInfo.getId() + ", nodeId=" + nodeId);
-            
+            System.out.println(">>> WorkInfoEntity.carState 업데이트 완료: id=" + workInfo.getId() + ", nodeId=" + nodeId);
+
             // 구역별 라즈베리파이에 신호 발행
             publishZoneSignal(node, carId);
             

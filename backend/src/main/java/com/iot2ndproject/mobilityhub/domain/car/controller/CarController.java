@@ -34,8 +34,11 @@ public class CarController {
 
     @GetMapping("/list")
     public ResponseEntity<?> listByUser(@RequestParam("userId") String userId){
-        carService.findCarNumbersByUser(userId);
-
-        return ResponseEntity.ok(HttpStatus.OK);
+        try {
+            return ResponseEntity.ok(carService.findCarNumbersByUser(userId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
     }
 }
