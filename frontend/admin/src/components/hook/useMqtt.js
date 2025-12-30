@@ -15,6 +15,8 @@ const useMqtt = (brokerUrl) => {
 
   // 🔴 YOLO 번호판 박스 좌표
   const [yoloBox, setYoloBox] = useState(null);
+  // 리프트 각도
+  const [angleValue, setAngleValue] = useState(null);
 
   useEffect(() => {
     // 브로커 연결
@@ -64,10 +66,12 @@ const useMqtt = (brokerUrl) => {
       }
 
       // 🌡 센서 데이터
-      if (topic === "heaves/home/web/sensor/dht11") {
+      if (topic === "parking/web/repair/lift/angle") {
         try {
           const data = JSON.parse(payload);
-          console.log("센서 데이터:", data);
+          setAngleValue(data.angle);
+
+          console.log("각도 데이터:", data);
         } catch (e) {
           console.error("센서 JSON 파싱 오류", e);
         }
@@ -114,6 +118,7 @@ const useMqtt = (brokerUrl) => {
     imageSrc, // 실시간 CCTV
     capturedImage, // 📸 캡처 이미지
     yoloBox,
+    angleValue,
     publish,
   };
 };
