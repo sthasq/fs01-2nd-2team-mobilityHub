@@ -1,4 +1,4 @@
-package com.iot2ndproject.mobilityhub.domain.admin.dto;
+package com.iot2ndproject.mobilityhub.domain.entry.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

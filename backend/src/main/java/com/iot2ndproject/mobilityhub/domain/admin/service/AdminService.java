@@ -3,7 +3,6 @@ package com.iot2ndproject.mobilityhub.domain.admin.service;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminPassChangeRequest;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminUpdateRequest;
-import com.iot2ndproject.mobilityhub.domain.admin.dto.RegisteredCarResponseDTO;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ public interface AdminService {
 
     void updatePassword(String adminId, String newPassword);
 
-    List<RegisteredCarResponseDTO> getRegisteredCarsForEntrance();
+
 }
 
 

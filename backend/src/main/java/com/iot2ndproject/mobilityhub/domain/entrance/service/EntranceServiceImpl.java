@@ -1,5 +1,4 @@
 package com.iot2ndproject.mobilityhub.domain.entrance.service;
-import com.iot2ndproject.mobilityhub.domain.admin.dto.RegisteredCarResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.car.dao.CarDAO;
 import com.iot2ndproject.mobilityhub.domain.car.dao.UserCarDAO;
 import com.iot2ndproject.mobilityhub.domain.car.entity.CarEntity;
@@ -8,6 +7,7 @@ import com.iot2ndproject.mobilityhub.domain.entrance.dao.EntranceDAO;
 import com.iot2ndproject.mobilityhub.domain.entrance.dao.ImageDAO;
 import com.iot2ndproject.mobilityhub.domain.entrance.dto.*;
 import com.iot2ndproject.mobilityhub.domain.entrance.entity.ImageEntity;
+import com.iot2ndproject.mobilityhub.domain.entry.dto.RegisteredCarResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.service_request.dao.WorkInfoDAO;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;

@@ -1,7 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.entrance.service;
 
-import com.iot2ndproject.mobilityhub.domain.admin.dto.RegisteredCarResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.entrance.dto.*;
+import com.iot2ndproject.mobilityhub.domain.entry.dto.RegisteredCarResponseDTO;
 
 import java.util.List;
 

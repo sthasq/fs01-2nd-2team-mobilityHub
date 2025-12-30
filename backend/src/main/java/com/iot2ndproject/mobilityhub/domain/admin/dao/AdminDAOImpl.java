@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminDAOImpl implements AdminDAO {
     private final AdminRepository adminRepository;
-    private final UserCarRepository userCarRepository;
+
 
     @Override
     public List<AdminEntity> findAll() {
@@ -42,10 +42,7 @@ public class AdminDAOImpl implements AdminDAO {
         return adminRepository.save(entity);
     }
 
-    @Override
-    public List<UserCarEntity> findRegisteredCarsForEntrance() {
-        return userCarRepository.findAll();
-    }
+
 }
 
 

@@ -1,5 +1,6 @@
 package com.iot2ndproject.mobilityhub.domain.entry.dao;
 
+import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 
 import java.time.LocalDateTime;
@@ -13,4 +14,6 @@ public interface EntryDAO {
     List<WorkInfoEntity> findTodayEntry(LocalDateTime start, LocalDateTime end);
 
     WorkInfoEntity save(WorkInfoEntity workInfo);
+
+    List<UserCarEntity> findRegisteredCarsForEntrance();
 }

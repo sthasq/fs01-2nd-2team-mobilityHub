@@ -2,6 +2,7 @@ package com.iot2ndproject.mobilityhub.domain.entry.service;
 
 import com.iot2ndproject.mobilityhub.domain.entry.dao.EntryDAO;
 import com.iot2ndproject.mobilityhub.domain.entrance.dto.EntranceEntryViewDTO;
+import com.iot2ndproject.mobilityhub.domain.entry.dto.RegisteredCarResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.global.mqtt.MyPublisher;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,19 @@ public class EntryServiceImpl implements EntryService {
                 "open",
                 "parking/web/entrance/approve"
         );
+    }
+
+    @Override
+    public List<RegisteredCarResponseDTO> getRegisteredCarsForEntrance() {
+
+        return entryDAO.findRegisteredCarsForEntrance()
+                .stream()
+                .map(car -> new RegisteredCarResponseDTO(
+                        car.getId(),
+                        car.getUser().getUserName(),
+                        car.getCar().getCarNumber()
+                ))
+                .toList();
     }
 
 }
