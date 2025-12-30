@@ -19,8 +19,8 @@ public interface EntranceDAO {
     Optional<WorkInfoEntity> findLatestEntranceWork(); // workId=1
     List<WorkInfoEntity> findEntryBetween(LocalDateTime start, LocalDateTime end);
     List<WorkInfoEntity> findExitBetween(LocalDateTime start, LocalDateTime end);
-    Optional<WorkInfoEntity> findByImageId(Long imageId);
-    Optional<WorkInfoEntity> findLatestEntranceWithImage();
+//    Optional<WorkInfoEntity> findByImageId(Long imageId);
+//    Optional<WorkInfoEntity> findLatestEntranceWithImage();
     // List
     List<WorkInfoEntity> findAll();
     List<WorkInfoEntity> findAllToday(); // 파생메서드가 애매해서 DAO에서 필터링

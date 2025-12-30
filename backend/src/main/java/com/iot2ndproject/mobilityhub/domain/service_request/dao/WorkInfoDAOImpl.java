@@ -40,8 +40,9 @@ public class WorkInfoDAOImpl implements WorkInfoDAO {
 
     @Override
     public List<WorkInfoEntity> findByEntryTimeIsNotNullAndEntryTimeBetween(LocalDateTime start, LocalDateTime end) {
-        return workInfoRepository
-                .findByEntryTimeIsNotNullAndEntryTimeBetween(start, end);
+//        return workInfoRepository
+//                .findByEntryTimeIsNotNullAndEntryTimeBetween(start, end);\
+        return null;
     }
 
     /**

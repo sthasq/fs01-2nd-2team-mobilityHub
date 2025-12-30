@@ -53,11 +53,11 @@ public class EntranceDAOImpl implements EntranceDAO {
 
 
 
-    @Override
-    public Optional<WorkInfoEntity> findLatestEntranceWithImage() {
-        return workInfoRepository
-                .findTopByImageIsNotNullOrderByRequestTimeDesc();
-    }
+//    @Override
+//    public Optional<WorkInfoEntity> findLatestEntranceWithImage() {
+//        return workInfoRepository
+//                .findTopByImageIsNotNullOrderByRequestTimeDesc();
+//    }
     @Override
     public Optional<WorkInfoEntity> findLatestEntranceWork() {
         return workInfoRepository.findTopByWork_WorkIdOrderByRequestTimeDesc(1);
@@ -72,9 +72,9 @@ public class EntranceDAOImpl implements EntranceDAO {
     public List<WorkInfoEntity> findExitBetween(LocalDateTime start, LocalDateTime end) {
         return workInfoRepository.findByExitTimeBetween(start, end);
     }
-    @Override
-    public Optional<WorkInfoEntity> findByImageId(Long imageId) {
-        return workInfoRepository
-                .findTopByImage_ImageIdOrderByRequestTimeDesc(imageId);
-    }
+//    @Override
+//    public Optional<WorkInfoEntity> findByImageId(Long imageId) {
+//        return workInfoRepository
+//                .findTopByImage_ImageIdOrderByRequestTimeDesc(imageId);
+//    }
 }

@@ -41,8 +41,8 @@ public class EntranceServiceImpl implements EntranceService {
     public EntranceResponseDTO getLatestEntranceImage() {
 
         ImageEntity image = imageDAO.findLatest();
-        WorkInfoEntity work =
-                entranceDAO.findLatestEntranceWithImage().orElse(null);
+        WorkInfoEntity work = null;
+//                entranceDAO.findLatestEntranceWithImage().orElse(null);
 
         EntranceResponseDTO dto = new EntranceResponseDTO();
 
@@ -107,8 +107,9 @@ public class EntranceServiceImpl implements EntranceService {
 
         WorkInfoEntity work = null;
         if (image != null) {
-            work = entranceDAO.findByImageId((long) image.getImageId())
-                    .orElse(null);
+            work = null;
+//                    entranceDAO.findByImageId((long) image.getImageId())
+//                    .orElse(null);
         }
 
         EntranceResponseDTO dto = new EntranceResponseDTO();
