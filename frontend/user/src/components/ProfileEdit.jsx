@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProfile, updateProfile } from "../api/userApi";
+import UserHeader from "./UserHeader";
 
 export function ProfileEdit({ isLogin }) {
   const [name, setName] = useState("");
@@ -47,25 +48,7 @@ export function ProfileEdit({ isLogin }) {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb", padding: "16px" }}>
       {/* 헤더 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          marginBottom: "16px",
-          backgroundColor: "#fff",
-          padding: "8px",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-        }}
-      >
-        <button onClick={handleBack} style={{ padding: "4px 8px" }}>
-          &lt; 뒤로
-        </button>
-        <div>
-          <div style={{ fontSize: "12px", color: "#6b7280" }}>로그인 사용자</div>
-          <div>{userId}</div>
-        </div>
-      </div>
+      <UserHeader label="로그인 사용자" value={userId} onBack={handleBack} backText="< 뒤로" />
 
       {/* 정보 수정 */}
       <div style={{ marginTop: "16px" }}>
