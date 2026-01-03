@@ -23,24 +23,11 @@ public class EntranceController {
         return ResponseEntity.ok(entranceService.getLatestEntranceImage());
     }
 
-    // OCR 모듈(라즈베리파이/서버 AI)이 추출한 차량 번호판 문자열 + 부가 데이터
-    @PostMapping("/ocr")
-    public ResponseEntity<?> ocr(@RequestBody OcrEntryRequestDTO dto) {
-        return ResponseEntity.ok(entranceService.receiveOcr(dto));
-    }
-
-    // 입차 승인
-    @PostMapping("/{workId}/approve")
-    public ResponseEntity<?> approve(@PathVariable Long workId) {
-        entryService.approveEntrance(workId);
-        return ResponseEntity.ok().build();
-    }
-
     // “가장 최근 입차(또는 OCR 인식 결과 기반)의 대표 정보”
-    @GetMapping("/latest")
-    public ResponseEntity<EntranceResponseDTO> latest() {
-        return ResponseEntity.ok(entranceService.getLatestEntrance());
-    }
+//    @GetMapping("/latest")
+//    public ResponseEntity<EntranceResponseDTO> latest() {
+//        return ResponseEntity.ok(entranceService.getLatestEntrance());
+//    }
 
     // work_info 테이블 기반의 전체 작업 기록
     @GetMapping("/work/list")
@@ -71,29 +58,23 @@ public class EntranceController {
         return entranceService.getTodayExitDTO();
     }
 
-    // 번호판 수정
-    @PutMapping("/{id}/plate")
-    public ResponseEntity<?> updatePlate(@PathVariable Long id,
-                                         @RequestBody PlateUpdateRequest request) {
-        entranceService.updatePlateNumber(id, request.getCarNumber());
-        return ResponseEntity.ok().build();
-    }
-
-    // OCR 수정 (관리자)
-    @PutMapping("/image/{imageId}/ocr")
-    public ResponseEntity<?> updateOcr(@PathVariable Long imageId,
-                                       @RequestBody OcrUpdateRequestDTO dto) {
-        entranceService.updateOcrNumber(imageId, dto.getCarNumber());
-        return ResponseEntity.ok().build();
-    }
-
-
     @PostMapping("/approve/registered/{userCarId}")
     public ResponseEntity<Void> approveRegisteredCar(
             @PathVariable Long userCarId) {
 
         entranceService.approveRegisteredCar(userCarId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{workId}/approve")
+    public ResponseEntity<Void> approveEntrance(@PathVariable Long workId) {
+        entranceService.approveEntrance(workId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/current")
+    public CurrentEntranceCarResponseDTO current(@RequestParam int nodeId) {
+        return entranceService.getCurrentEntranceCar(nodeId);
     }
     
 }

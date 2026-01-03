@@ -7,13 +7,16 @@ import java.util.List;
 
 public interface EntranceService {
 
-    EntranceResponseDTO receiveOcr(OcrEntryRequestDTO dto);
+//    EntranceResponseDTO receiveOcr(OcrEntryRequestDTO dto);
 
-    void updateOcrNumber(Long imageId, String carNumber);
+    //void updateOcrNumber(Long imageId, String carNumber);
 
     EntranceResponseDTO getLatestEntrance();
 
+    //
+    CurrentEntranceCarResponseDTO getCurrentEntranceCar(int nodeId);
 
+    void approveEntrance(Long workId);
     // 최신 이미지
 
     EntranceResponseDTO getLatestEntranceImage();
@@ -26,7 +29,6 @@ public interface EntranceService {
     List<WorkInfoResponseDTO> findAllToday();
 
     List<WorkInfoTotalListResponse> workInfoTotalList();
-    List<RegisteredCarResponseDTO> getRegisteredCarsForEntrance();
     // 번호판 수정
     void updatePlateNumber(Long workInfoId, String newCarNumber);
 

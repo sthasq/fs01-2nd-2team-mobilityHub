@@ -9,6 +9,7 @@ import com.iot2ndproject.mobilityhub.domain.entrance.dto.*;
 import com.iot2ndproject.mobilityhub.domain.entrance.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.entry.dto.RegisteredCarResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.service_request.dao.WorkInfoDAO;
+import com.iot2ndproject.mobilityhub.domain.service_request.entity.ParkingMapNodeEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.global.mqtt.MyPublisher;
@@ -33,7 +34,7 @@ public class EntranceServiceImpl implements EntranceService {
     private final WorkInfoDAO workInfoDAO;
     private final MyPublisher mqttPublisher;
     private final UserCarDAO userCarDAO;
-
+    private final MyPublisher myPublisher;
     /**
      *  최신 이미지 + 최근 입차 상태 (메인 카드)
      */
@@ -66,37 +67,37 @@ public class EntranceServiceImpl implements EntranceService {
         return dto;
     }
 
-    @Override
-    public EntranceResponseDTO receiveOcr(OcrEntryRequestDTO dto) {
+//    @Override
+//    public EntranceResponseDTO receiveOcr(OcrEntryRequestDTO dto) {
+//
+//        ImageEntity image = new ImageEntity();
+//        image.setCameraId(dto.getCameraId());
+//        image.setImagePath(dto.getImagePath());
+//        image.setOcrNumber(dto.getOcrNumber());
+//
+//        entranceDAO.save(image);
+//        autoMatch(image);
+//
+//        EntranceResponseDTO response = new EntranceResponseDTO();
+//        response.setImageId((long) image.getImageId());
+//        response.setImagePath(image.getImagePath());
+//        response.setCameraId(image.getCameraId());
+//        response.setOcrNumber(image.getOcrNumber());
+//        response.setTime(image.getRegDate());
+//        response.setMatch(false);
+//
+//        return response;
+//    }
 
-        ImageEntity image = new ImageEntity();
-        image.setCameraId(dto.getCameraId());
-        image.setImagePath(dto.getImagePath());
-        image.setOcrNumber(dto.getOcrNumber());
-
-        entranceDAO.save(image);
-        autoMatch(image);
-
-        EntranceResponseDTO response = new EntranceResponseDTO();
-        response.setImageId((long) image.getImageId());
-        response.setImagePath(image.getImagePath());
-        response.setCameraId(image.getCameraId());
-        response.setOcrNumber(image.getOcrNumber());
-        response.setTime(image.getRegDate());
-        response.setMatch(false);
-
-        return response;
-    }
-
-    @Override
-    public void updateOcrNumber(Long imageId, String carNumber) {
-
-        ImageEntity image = entranceDAO.findById(imageId);
-        image.setCorrectedOcrNumber(carNumber);
-        entranceDAO.save(image);
-
-        autoMatch(image);
-    }
+//    @Override
+//    public void updateOcrNumber(Long imageId, String carNumber) {
+//
+//        ImageEntity image = entranceDAO.findById(imageId);
+//        image.setCorrectedOcrNumber(carNumber);
+//        entranceDAO.save(image);
+//
+//        autoMatch(image);
+//    }
 
 
 
@@ -118,7 +119,7 @@ public class EntranceServiceImpl implements EntranceService {
             dto.setImageId((long) image.getImageId());
             dto.setImagePath(image.getImagePath());
             dto.setCameraId(image.getCameraId());
-            dto.setOcrNumber(image.getOcrNumber());
+            dto.setCarNumber(image.getOcrNumber());
             dto.setCorrectedOcrNumber(image.getCorrectedOcrNumber());
             dto.setTime(image.getRegDate());
         }
@@ -135,32 +136,51 @@ public class EntranceServiceImpl implements EntranceService {
         return dto;
     }
 
+    @Override
+    public CurrentEntranceCarResponseDTO getCurrentEntranceCar(int nodeId) {
+        WorkInfoEntity workInfo = entranceDAO.findCurrentEntranceCar(nodeId)
+                .orElseThrow(() -> new IllegalStateException("입구 대기 차량 없음"));
+
+        ImageEntity image = workInfo.getImage();
+
+        return new CurrentEntranceCarResponseDTO(
+                workInfo.getId(),
+                workInfo.getCarState().getNodeId(),
+                workInfo.getCarState().getNodeName(),
+                image != null ? image.getImagePath() : null,
+                workInfo.getUserCar() != null && workInfo.getUserCar().getCar() != null
+                        ? workInfo.getUserCar().getCar().getCarNumber()
+                        : null,
+                workInfo.getRequestTime()
+        );
 
 
-    private void autoMatch(ImageEntity image) {
 
-        String plate = image.getCorrectedOcrNumber() != null
-                ? image.getCorrectedOcrNumber()
-                : image.getOcrNumber();
-
-        if (plate == null) return;
-
-        UserCarEntity userCar = carDAO.findUserCarByCarNumber(plate).orElse(null);
-        if (userCar == null) return;
-
-        if (workInfoDAO.existsByImageId((long) image.getImageId())) return;
-
-        WorkInfoEntity workInfo = new WorkInfoEntity();
-        workInfo.setUserCar(userCar);
-        workInfo.setImage(image);
-        workInfo.setRequestTime(LocalDateTime.now());
-
-        WorkEntity entryWork = new WorkEntity();
-        entryWork.setWorkId(1);
-        workInfo.setWork(entryWork);
-
-        workInfoDAO.save(workInfo);
     }
+
+    @Override
+    public void approveEntrance(Long workId) {
+
+        WorkInfoEntity workInfo = entranceDAO.findById(workId);
+
+        // 입차 시간 기록
+        workInfo.setEntryTime(LocalDateTime.now());
+
+        // 다음 노드로 이동 (예: nodeId=2)
+        ParkingMapNodeEntity nextNode =
+                entranceDAO.findParkingNode(2);
+
+        workInfo.setCarState(nextNode);
+        entranceDAO.save(workInfo);
+
+        //  MQTT 발행 (게이트 OPEN)
+        myPublisher.sendToMqtt(
+                "open",
+                "parking/web/entrance/approve"
+        );
+    }
+
+
 
     @Override
     public List<WorkInfoResponseDTO> getTodayEntryDTO() {
@@ -217,31 +237,31 @@ public class EntranceServiceImpl implements EntranceService {
     public List<WorkInfoTotalListResponse> workInfoTotalList() {
         return List.of();
     }
-    @Override
-    public List<RegisteredCarResponseDTO> getRegisteredCarsForEntrance() {
-
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = LocalDate.now().plusDays(1).atStartOfDay();
-
-        //  오늘 입차한 WorkInfo 조회
-        List<WorkInfoEntity> todayEntered =
-                workInfoDAO.findByEntryTimeIsNotNullAndEntryTimeBetween(start, end);
-
-        //  오늘 입차한 userCarId 목록
-        Set<Long> enteredUserCarIds = todayEntered.stream()
-                .map(w -> w.getUserCar().getId())
-                .collect(Collectors.toSet());
-
-        // ✅ 등록 차량 중 "오늘 입차 안 한 차량"만 필터
-        return userCarDAO.findAll().stream()
-                .filter(uc -> !enteredUserCarIds.contains(uc.getId()))
-                .map(uc -> new RegisteredCarResponseDTO(
-                        uc.getId(),
-                        uc.getUser().getUserName(),
-                        uc.getCar().getCarNumber()
-                ))
-                .toList();
-    }
+//    @Override
+//    public List<RegisteredCarResponseDTO> getRegisteredCarsForEntrance() {
+//
+//        LocalDateTime start = LocalDate.now().atStartOfDay();
+//        LocalDateTime end = LocalDate.now().plusDays(1).atStartOfDay();
+//
+//        //  오늘 입차한 WorkInfo 조회
+//        List<WorkInfoEntity> todayEntered =
+//                workInfoDAO.findByEntryTimeIsNotNullAndEntryTimeBetween(start, end);
+//
+//        //  오늘 입차한 userCarId 목록
+//        Set<Long> enteredUserCarIds = todayEntered.stream()
+//                .map(w -> w.getUserCar().getId())
+//                .collect(Collectors.toSet());
+//
+//        // ✅ 등록 차량 중 "오늘 입차 안 한 차량"만 필터
+//        return userCarDAO.findAll().stream()
+//                .filter(uc -> !enteredUserCarIds.contains(uc.getId()))
+//                .map(uc -> new RegisteredCarResponseDTO(
+//                        uc.getId(),
+//                        uc.getUser().getUserName(),
+//                        uc.getCar().getCarNumber()
+//                ))
+//                .toList();
+//    }
 
 
     @Override
@@ -260,40 +280,14 @@ public class EntranceServiceImpl implements EntranceService {
 
     @Override
     public void approveRegisteredCar(Long userCarId) {
-        UserCarEntity userCar = userCarDAO.findById(userCarId)
-                .orElseThrow(() -> new IllegalArgumentException("등록 차량 없음"));
 
-
-        boolean alreadyEnteredToday =
-                workInfoDAO.existsByUserCarAndEntryTimeBetween(
-                        userCar,
-                        LocalDate.now().atStartOfDay(),
-                        LocalDate.now().plusDays(1).atStartOfDay()
-                );
-
-        if (alreadyEnteredToday) {
-            throw new IllegalStateException("이미 입차된 차량입니다.");
-        }
-
-        WorkInfoEntity work = new WorkInfoEntity();
-        work.setUserCar(userCar);
-        work.setEntryTime(LocalDateTime.now());
-
-        workInfoDAO.save(work);
-
-        mqttPublisher.sendToMqtt(
-                "open",
-                "parking/web/entrance/approve"
-        );
     }
-
-
 
 
     private WorkInfoResponseDTO convertToDTOFromWorkInfo(WorkInfoEntity w) {
 
         WorkInfoResponseDTO dto = new WorkInfoResponseDTO();
-        dto.setId(String.valueOf(w.getId()));
+        dto.setWorkId(Long.valueOf(String.valueOf(w.getId())));
         dto.setEntryTime(w.getEntryTime() != null ? w.getEntryTime() : w.getRequestTime());
         dto.setExitTime(w.getExitTime());
 

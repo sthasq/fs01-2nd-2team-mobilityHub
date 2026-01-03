@@ -217,22 +217,41 @@ public class MqttService {
                     payload, new TypeReference<Map<String, Object>>() {}
             );
 
+            String event = (String) data.get("event");
+            if (!"CAPTURED".equals(event)) return;
+
             String cameraId = (String) data.get("cameraId");
             String imagePath = (String) data.get("imagePath");
+            Integer nodeId = (Integer) data.get("nodeId");
             String ocrNumber = (String) data.get("ocrNumber");
 
+            //  node 조회 (입구면 nodeId=1)
+            ParkingMapNodeEntity node = parkingMapNodeRepository.findById(nodeId)
+                    .orElseThrow(() -> new IllegalArgumentException("node 없음: " + nodeId));
+
+            //  image 저장
             ImageEntity image = new ImageEntity();
             image.setCameraId(cameraId);
             image.setImagePath(imagePath);
             image.setOcrNumber(ocrNumber);
-
+            image.setRegDate(LocalDateTime.now());
             imageRepository.save(image);
 
-            System.out.println(" image 테이블 저장 완료");
+            //  work_info 생성
+            WorkInfoEntity workInfo = new WorkInfoEntity();
+            workInfo.setRequestTime(LocalDateTime.now());
+            workInfo.setCarState(node);
+            workInfo.setImage(image);
+
+            workInfoRepository.save(workInfo);
+
+            System.out.println(">>> work_info 생성 완료 (입구 대기)");
 
         } catch (Exception e) {
+            System.err.println(" entrance image 처리 실패");
             e.printStackTrace();
         }
     }
+
 
 }
