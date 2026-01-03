@@ -7,17 +7,18 @@ const useMqtt = (brokerUrl) => {
   const [connectStatus, setConnectStatus] = useState("connecting");
   const [client, setClient] = useState(null);
 
-  // 🔴 실시간 CCTV 스트리밍 이미지
   const [imageSrc, setImageState] = useState("");
 
-  // 🟢 캡처된 정지 이미지
   const [capturedImage, setCapturedImage] = useState("");
 
+<<<<<<< HEAD
+=======
   // 🔴 YOLO 번호판 박스 좌표
   const [yoloBox, setYoloBox] = useState(null);
   // 리프트 각도
   const [angleValue, setAngleValue] = useState(null);
 
+>>>>>>> 626681e1dc757d5d7fe0b082a4848974b8235257
   useEffect(() => {
     // 브로커 연결
     const mqttClient = mqtt.connect(brokerUrl, {
@@ -115,10 +116,8 @@ const useMqtt = (brokerUrl) => {
 
   return {
     connectStatus,
-    imageSrc, // 실시간 CCTV
-    capturedImage, // 📸 캡처 이미지
-    yoloBox,
-    angleValue,
+    imageSrc,
+    capturedImage,
     publish,
   };
 };
