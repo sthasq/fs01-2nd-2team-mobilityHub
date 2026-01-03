@@ -1,6 +1,3 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import SideMenu from "./components/menu/SideMenu";
 import Header from "./components/menu/Header";
@@ -8,14 +5,13 @@ import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import MainSection from "./components/pages/MainSection";
 import EntranceExitSection from "./components/pages/EntranceExitSection";
 import StatisticsSection from "./components/pages/StatisticsSection";
-import CarWashSection from "./components/pages/CarWashSection";
-import LicenseModal from "./components/pages/LicenseModal";
 import RepairSection from "./components/pages/RepairSection";
 import AdminSection from "./components/pages/AdminSection";
 import ParkingSection from "./components/pages/ParkingSection";
 import AdminLogin from "./components/pages/AdminLogin";
 import ProtectedRoute from "./components/routes/ProtectedRoute";
 import PublicRoute from "./components/routes/PublicRoute";
+import CarWashSection from "./components/pages/CarWashSection";
 
 function App() {
   const navigate = useNavigate();
@@ -53,9 +49,7 @@ function App() {
             <Route
               path="/main"
               element={
-                <ProtectedRoute
-                  allowRoles={["TOTAL", "PARKING", "WASH", "REPAIR"]}
-                >
+                <ProtectedRoute allowRoles={["TOTAL", "PARKING", "WASH", "REPAIR"]}>
                   <MainSection />
                 </ProtectedRoute>
               }

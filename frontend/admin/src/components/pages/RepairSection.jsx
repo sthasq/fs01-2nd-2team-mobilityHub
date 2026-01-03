@@ -23,7 +23,7 @@ const RepairSection = () => {
   const [stockData, setStockData] = useState(null);
   const [reportList, setReportList] = useState([]);
   const [showCreateStockModal, setShowCreateStockModal] = useState(false);
-  const { connectStatus, imageSrc, publish, message } = useMqtt(BROKER_URL);
+  const { connectStatus, imageSrc, angleValue, publish, message } = useMqtt(BROKER_URL);
   const [liftStatus, setLiftStatus] = useState("대기");
 
   const refreshStockList = async () => {
@@ -110,6 +110,8 @@ const RepairSection = () => {
   const dd = today.getDate().toString().padStart(2, "0");
   const todayStr = yyyy + mm + dd; // yyyymmdd
 
+  //console.log("각도:", angleValue);
+
   // 렌더링할 리스트 필터링 및 상태 결정
   const filteredRepairList = (Array.isArray(repairList) ? repairList : [])
     .map((list) => {
@@ -179,9 +181,9 @@ const RepairSection = () => {
           <div className="card-item">
             <div>
               <p className="text">리프트 상태</p>
-              <p className="count">{liftStatus}</p>
+              <p className="count">{angleValue === null ? "미동작" : "동작중"}</p>
             </div>
-            <div className="icon-box" style={{ backgroundColor: "#fee2e2" }}>
+            <div className="icon-box">
               {/* icon 들어갈 자리, class=icon color:#dc2626 */}
               <div className="lift-btn-wrapper">
                 <button
