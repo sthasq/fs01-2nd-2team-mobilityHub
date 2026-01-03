@@ -15,7 +15,7 @@ export default function RegisteredCarSection({ onApproved }) {
 
   const fetchRegisteredCars = async () => {
     try {
-      const res = await axios.get("http://localhost:9000/admin/registered-cars");
+      const res = await axios.get("http://localhost:9000/entry/registered-cars");
       setCars(res.data);
     } catch (e) {
       console.error("등록 차량 조회 실패", e);
@@ -31,7 +31,7 @@ export default function RegisteredCarSection({ onApproved }) {
 
       alert("입차 승인 완료 (차단기 OPEN)");
 
-      // 🔥 부모에게 알려서 입차 기록 다시 불러오게
+      //  부모에게 알려서 입차 기록 다시 불러오게
       onApproved?.();
     } catch (e) {
       console.error("입차 승인 실패", e);
