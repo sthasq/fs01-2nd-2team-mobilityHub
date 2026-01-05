@@ -6,26 +6,27 @@ import "../../App.css";
 import { workInfoTotalList } from "../../api/workInfoAPI";
 import useMqtt from "../hook/useMqtt";
 
-const BROKER_URL = "ws://192.168.14.69:9001";
 export default function ParkingSection() {
   const [workTotalList, setWorkTotalList] = useState([]);
-  const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
+  const { connectStatus, imageSrc, publish } = useMqtt();
 
   useEffect(() => {
+    if (connectStatus === "connected") {
+      publish("parking/web/parking/cam/control", "start");
+    }
+
     workInfoTotalList()
       .then((res) => {
         setWorkTotalList(res);
       })
       .catch((err) => console.error("조회실패: ", err));
-  }, []);
 
-  useEffect(() => {
-    if (connectStatus === "connected") {
-      publish("parking/web/parkingzone/cam", "start");
-    }
+    return () => {
+      publish("/parking/web/parking/cam/control", "stop");
+    };
   }, [connectStatus, publish]);
 
-  console.log(workTotalList);
+  // console.log(workTotalList);
 
   const sectors = ["P01", "P02", "P03"];
   const carStateToSector = {
@@ -42,7 +43,7 @@ export default function ParkingSection() {
   // 갯수 확인
   const countParking = activeVehicles.length;
 
-  console.log(countParking);
+  // console.log(countParking);
 
   // 화면용 parkingSpots 생성
   const parkingSpots = sectors.map((sector) => {

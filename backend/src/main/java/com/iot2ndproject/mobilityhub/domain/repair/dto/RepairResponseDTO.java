@@ -38,7 +38,7 @@ public class RepairResponseDTO {
         }
 
         if (entity.getUserCar() != null && entity.getUserCar().getCar() != null) {
-            this.userCarId = Long.bitCount(entity.getUserCar().getId());
+            this.userCarId = entity.getUserCar().getId().intValue();
             this.car_number = entity.getUserCar().getCar().getCarNumber();
         }
 

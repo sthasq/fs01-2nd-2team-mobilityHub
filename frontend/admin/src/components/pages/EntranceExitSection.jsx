@@ -5,7 +5,6 @@ import RegisteredCarSection from "./RegisteredCarSection";
 import "../style/EntranceExitSection.css";
 
 const API_BASE = "http://localhost:9000";
-const MQTT_BROKER = "ws://192.168.137.1:9001";
 const PAGE_SIZE = 6;
 
 export default function EntranceExitSection() {
@@ -16,7 +15,7 @@ export default function EntranceExitSection() {
   const [exitPage, setExitPage] = useState(1);
 
   /* ================= MQTT ================= */
-  const { imageSrc, capturedImage, publish } = useMqtt(MQTT_BROKER);
+  const { imageSrc, capturedImage, publish } = useMqtt();
 
   /* ================= Canvas Ref ================= */
   const canvasRef = useRef(null);
