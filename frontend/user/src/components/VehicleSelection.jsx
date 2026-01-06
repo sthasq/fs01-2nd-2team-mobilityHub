@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { addUserCar, fetchUserCars } from "../api/vehicleApi";
+import UserHeader from "./UserHeader";
 
 export default function VehicleSelection({ isLogin }) {
   const [vehicles, setVehicles] = useState([]);
@@ -76,33 +77,13 @@ export default function VehicleSelection({ isLogin }) {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
       {/* 헤더 */}
-      <div
-        style={{
-          backgroundColor: "#fff",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-          padding: "16px",
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-        }}
-      >
-        <button
-          onClick={handleBack}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "4px 8px",
-          }}
-        >
-          ← 뒤로
-        </button>
-
-        <div>
-          <div style={{ fontSize: "12px", color: "#6b7280" }}>로그인 사용자</div>
-          <div>{userId}</div>
-        </div>
-      </div>
+      <UserHeader
+        variant="wide"
+        label="로그인 사용자"
+        value={userId}
+        onBack={handleBack}
+        backText="← 뒤로"
+      />
 
       {/* 차량 목록 */}
       <div style={{ padding: "16px" }}>

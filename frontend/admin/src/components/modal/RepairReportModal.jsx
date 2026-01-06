@@ -1,30 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import "../style/RepairReportModal.css";
 import { sendComplete, writeReport } from "../../api/repairAPI";
 
 export default function RepairReportModal({ onClose, data, refreshStockList }) {
-  const [comment, setComment] = useState("");
-  const [repairDescription, setRepairDescription] = useState("");
   const [usedParts, setUsedParts] = useState([]);
-  const [selectedPartId, setSelectedPartId] = useState("");
-  const [reportData, setReportData] = useState(null);
+  // 로딩 상태
+  const [loading, setLoading] = useState(false);
+
+  // 지연 함수
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  // 폼 데이터 상태
   const [formData, setFormData] = useState({
     repairTitle: "",
     repairDetail: "",
     repairAmount: 0,
   });
 
-  useEffect(() => {
-    if (!data) return;
-
-    if (Array.isArray(data)) {
-      setReportData(data[0] ?? null);
-    } else {
-      setReportData(data);
-    }
+  // 보고서 데이터 메모이제이션
+  const reportData = useMemo(() => {
+    if (!data) return null;
+    return Array.isArray(data) ? data ?? null : data;
   }, [data]);
 
+  // 입력 필드 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -33,6 +33,7 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
     }));
   };
 
+  // 작업 완료 신호 전송 핸들러
   const handleSubmit = async (reportData) => {
     console.log(reportData);
 
@@ -48,13 +49,15 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
     }
   };
 
+  // 보고서 작성 핸들러
   const handleCreate = async (e) => {
     e.preventDefault();
 
-    const isEmptyField = Object.values(formData).some((value) => value === "" || value == null || value == undefined);
+    const isEmptyField = Object.values(formData).some((value) => value === "" || value == null);
 
     if (isEmptyField) {
       alert("모든 항목을 입력해주세요.");
+      return;
     }
 
     const requestBody = {
@@ -67,27 +70,32 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
 
     const workInfoId = reportData.id;
 
+    // 보고서 작성 API 호출
     try {
+      setLoading(true);
+
       const response = await writeReport(requestBody);
 
       if (response.status === 200) {
-        alert("보고서 작성이 완료되었습니다.");
+        await delay(1000);
 
         await handleSubmit(workInfoId);
-
         await refreshStockList();
         onClose();
+        alert("보고서 작성이 완료되었습니다.");
+        window.location.reload();
       }
+
       return response;
     } catch (error) {
       console.error("보고서 작성 실패: ", error);
       alert("보고서 작성 실패");
+    } finally {
+      setLoading(false);
     }
-    console.log(workInfoId);
   };
 
-  console.log(reportData);
-
+  // 총 금액 계산(기본 60000 + 추가 금액)
   const calculateTotal = () => {
     let total = 60000 + Number(formData.repairAmount);
     usedParts.forEach((up) => {
@@ -96,6 +104,7 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
     return total;
   };
 
+  // 오늘 날짜 포맷팅
   const today = new Date().toLocaleDateString("ko-KR", {
     year: "numeric",
     month: "long",
@@ -123,7 +132,9 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
             <div className="section">
               <h3>추가 요청사항</h3>
               <div className="section-content">
-                <div className="item-box">{reportData.additionalRequest}</div>
+                <div className="item-box">
+                  {reportData.additionalRequest ? reportData.additionalRequest : "없음"}
+                </div>
               </div>
             </div>
 
@@ -155,7 +166,13 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
 
                 <div>
                   <span>추가금액 : </span>
-                  <input type="number" name="repairAmount" value={formData.repairAmount} onChange={handleChange} />
+                  <input
+                    type="number"
+                    name="repairAmount"
+                    value={formData.repairAmount}
+                    placeholder="추가금액을 입력하세요."
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
             </div>

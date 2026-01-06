@@ -6,10 +6,6 @@ import { Clock, Droplets, CheckCircle } from "lucide-react";
 import CarWashBarChart from "../chart/CarWashBarChart";
 import useMqtt from "../hook/useMqtt";
 
-// MQTT 브로커 주소
-const BROKER_URL = "ws://192.168.14.39:9001";
-//const BROKER_URL = import.meta.env.VITE_BROKER_URL;
-
 // 차량 상태 상수
 const CAR_STATE = {
   WASHING: 10,
@@ -31,7 +27,7 @@ const CarWashSection = () => {
   const [popupMessage, setPopupMessage] = useState(null);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
-  const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
+  const { connectStatus, imageSrc, publish } = useMqtt();
 
   // 페이지 로딩 시 카메라 스트리밍 시작
   useEffect(() => {
@@ -54,8 +50,6 @@ const CarWashSection = () => {
       })
       .catch((err) => console.error("차량 정보 조회 실패", err));
   }, []);
-
-  console.log(carWashing);
 
   // 진행중 차량
   const washingCar = carWashing.find((item) => item.carStateNodeId === CAR_STATE.WASHING);

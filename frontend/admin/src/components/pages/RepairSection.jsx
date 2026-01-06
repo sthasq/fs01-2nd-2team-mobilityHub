@@ -1,25 +1,17 @@
-import React, { useEffect, useState } from "react";
-import "../style/RepairSection.css";
-import "../../App.css";
-import useMqtt from "../hook/useMqtt";
-import {
-  reportAllList,
-  writeReport,
-  sendComplete,
-  repairTodayList,
-  stockAllList,
-} from "../../api/repairAPI";
+import { useEffect, useState } from "react";
 import { Check, Clock, Wrench } from "lucide-react";
+
+import useMqtt from "../hook/useMqtt";
+import { reportAllList, repairTodayList, stockAllList } from "../../api/repairAPI";
+
 import RepairReportModal from "../modal/RepairReportModal";
 import RepairHistoryModal from "../modal/RepairHistoryModal";
 import StockModal from "../modal/StockModal";
 import StockCreateModal from "../modal/StockCreateModal";
 
-//const BROKER_URL = import.meta.env.VITE_BROKER_URL;
-// MQTT 브로커 주소 --> cctv 연결할 때
-//const BROKER_URL = "ws://192.168.14.39:9001";
-//const BROKER_URL = "ws://192.168.45.84";
-const BROKER_URL = "ws://192.168.137.1:9001";
+import "../style/RepairSection.css";
+import "../../App.css";
+
 const RepairSection = () => {
   const [repairList, getRepairList] = useState([]);
   const [stockList, getStockList] = useState([]);
@@ -28,9 +20,9 @@ const RepairSection = () => {
   const [stockData, setStockData] = useState(null);
   const [reportList, setReportList] = useState([]);
   const [showCreateStockModal, setShowCreateStockModal] = useState(false);
-  const { connectStatus, imageSrc, publish, message } = useMqtt(BROKER_URL);
-  const [liftStatus, setLiftStatus] = useState("대기");
+  const { connectStatus, imageSrc, angleValue, publish } = useMqtt();
 
+  // 재고 리스트 갱신 함수
   const refreshStockList = async () => {
     try {
       const repairResponse = await repairTodayList();
@@ -43,108 +35,13 @@ const RepairSection = () => {
     }
   };
 
+  // 재고 모달 열기
   const openStockModal = (stock) => {
     setStockData({ stock });
   };
 
+  // 재고 모달 닫기
   const closeModal = () => setStockData(null);
-
-  // API 호출
-  useEffect(() => {
-    if (connectStatus === "connected") {
-      publish("parking/web/repair/cam", "start");
-    }
-    repairTodayList()
-      .then((res) => {
-        getRepairList(res);
-      })
-      .catch((err) => console.error("정비소 작업정보 조회 실패: ", err));
-
-    stockAllList()
-      .then((res) => {
-        getStockList(res);
-      })
-      .catch((err) => console.error("재고 정보 조회 실패: ", err));
-
-    reportAllList()
-      .then((res) => {
-        setReportList(res);
-      })
-      .catch((err) => console.error("보고서 조회 실패: ", err));
-  }, [connectStatus, publish]);
-
-  const workingCar = Array.isArray(repairList)
-    ? repairList.filter((repair) => repair.carState === 13)
-    : [];
-
-  // console.log(workingCar);
-
-  // 대기 중인 차량
-  const waitForWark = Array.isArray(repairList)
-    ? repairList.filter(
-        (repair) =>
-          repair.carState !== 13 &&
-          repair.exit_time == null &&
-          (repair.entry_time == null || repair.carState == null) &&
-          (repair.entry_time !== null ||
-            repair.carState == 1 ||
-            repair.carState == 2 ||
-            repair.carState == 12)
-      ).length
-    : 0;
-
-  const handleCompleteWork = () => {
-    if (workingCar.length === 0) {
-      alert("현재 작업중인 차량이 없습니다.");
-      return;
-    }
-    setShowReportModal(true);
-  };
-
-  useEffect(() => {
-    if (connectStatus !== "connected") return;
-
-    // lift 토픽 구독
-    publish("parking/web/repair/lift", "status"); // 초기 상태 요청용(선택)
-  }, [connectStatus, publish]);
-
-  // useEffect(() => {
-  //   if (!message) return;
-
-  //   if (message.topic === "parking/web/repair/lift") {
-  //     if (message.payload === "up") {
-  //       setLiftStatus("상승중");
-  //     } else if (message.payload === "down") {
-  //       setLiftStatus("하강중");
-  //     }
-  //   }
-  // }, [message]);
-
-  const handleReportSubmit = async (reportData) => {
-    console.log("DB에 저장될 데이터: ", reportData);
-
-    try {
-      const response = await writeReport(reportData);
-
-      if (response.status === 200) {
-        alert("보고서작성이 등록됐습니다.");
-
-        // 보고서 작성 성공 후 작업 완료 신호 전송
-        if (reportData.workInfoId) {
-          const completeResponse = await sendComplete({
-            workInfoId: reportData.workInfoId,
-          });
-          if (completeResponse?.status === 200) {
-            console.log("작업 완료 신호 전송 성공");
-          }
-        }
-      }
-      return response;
-    } catch (error) {
-      console.error("에러발생: ", error);
-      alert("보고서 등록 중 오류가 발생했습니다.");
-    }
-  };
 
   // 오늘 날짜 문자열
   const today = new Date();
@@ -153,11 +50,86 @@ const RepairSection = () => {
   const dd = today.getDate().toString().padStart(2, "0");
   const todayStr = yyyy + mm + dd; // yyyymmdd
 
-  // 렌더링할 리스트 필터링 및 상태 결정
+  // API 호출
+  useEffect(() => {
+    // 정비소 카메라 작동 신호 전송
+    if (connectStatus === "connected") {
+      publish("parking/web/repair/cam/control", "start");
+    }
+    // 오늘자 받은요청 리스트
+    repairTodayList()
+      .then((res) => {
+        getRepairList(res);
+      })
+      .catch((err) => console.error("정비소 작업정보 조회 실패: ", err));
+
+    // 재고 리스트
+    stockAllList()
+      .then((res) => {
+        getStockList(res);
+      })
+      .catch((err) => console.error("재고 정보 조회 실패: ", err));
+
+    // 전체 보고서 리스트
+    reportAllList()
+      .then((res) => {
+        setReportList(res);
+      })
+      .catch((err) => console.error("보고서 조회 실패: ", err));
+
+    // 정비소 카메라 중지 신호 전송
+    return () => {
+      publish("parking/web/repair/cam/control", "stop");
+    };
+  }, [connectStatus, publish]);
+
+  // 오늘 작성된 보고서 리스트
+  const todayReportList = reportList.filter((report) => report.reportId.startsWith(todayStr));
+
+  // 작업중인 차량
+  const workingCar = repairList.filter(
+    (repair) =>
+      repair.carState === 13 &&
+      !todayReportList.some((report) => report.carNumber === repair.car_number)
+  );
+
+  // 대기 중인 차량
+  const waitForWark = Array.isArray(repairList)
+    ? repairList.filter(
+        (repair) =>
+          !workingCar ||
+          (repair.carState == null && repair.entry_time == null) ||
+          repair.carState === 1 ||
+          repair.carState === 2 ||
+          repair.carState === 12
+      ).length
+    : 0;
+
+  console.log(waitForWark);
+
+  // 작업 완료 버튼 핸들러
+  const handleCompleteWork = () => {
+    if (workingCar.length === 0) {
+      alert("현재 작업중인 차량이 없습니다.");
+      return;
+    }
+    setShowReportModal(true);
+  };
+
+  // MQTT 구독 설정
+  useEffect(() => {
+    if (connectStatus !== "connected") return;
+
+    // lift 토픽 구독
+    publish("parking/web/repair/lift", "status"); // 초기 상태 요청용(선택)
+  }, [connectStatus, publish]);
+
+  // 작업대기 중인 차량 리스트 필터링
   const filteredRepairList = (Array.isArray(repairList) ? repairList : [])
     .map((list) => {
       if (list.exit_time) return null;
 
+      // 오늘 작성된 보고서가 있는 차량은 제외
       const hasReportToday =
         Array.isArray(reportList) &&
         reportList.some(
@@ -169,26 +141,22 @@ const RepairSection = () => {
       if (list.carState === 13) {
         carStateText = "작업중";
       } else if (
-        (list.carState === null && list.entry_time == null) ||
-        ((list.carState === 0 ||
-          list.carState === 1 ||
-          list.carState === 2 ||
-          list.carState === 12) &&
-          list.entry_time !== null)
+        !workingCar ||
+        (list.carState == null && list.entry_time == null) ||
+        list.carState === 1 ||
+        list.carState === 2 ||
+        list.carState === 12
       ) {
         carStateText = "대기중";
       } else {
         return null;
       }
-
       return { ...list, carStateText };
     })
     .filter(Boolean);
 
   return (
     <div className="page">
-      {/* ---- 통계 카드 ---- */}
-
       {/* 현재 작업정보 */}
       <div className="status-card">
         {/* 작업차 번호 */}
@@ -197,7 +165,7 @@ const RepairSection = () => {
             <div>
               <p className="text">현재 작업차량</p>
               <p className="count">
-                {workingCar.length > 0 ? workingCar[0].car_number : "작업중인 차량 없음"}
+                {workingCar.length === 1 ? workingCar[0].car_number : "작업중인 차량 없음"}
               </p>
             </div>
             <div className="card-icon" style={{ backgroundColor: "#dbeafe" }}>
@@ -222,23 +190,12 @@ const RepairSection = () => {
           <div className="card-item">
             <div>
               <p className="text">리프트 상태</p>
-              <p className="count">{liftStatus}</p>
+              <p className="count">{angleValue === null ? "미동작" : "동작중"}</p>
             </div>
-            <div className="icon-box" style={{ backgroundColor: "#fee2e2" }}>
+            <div className="icon-box">
               {/* icon 들어갈 자리, class=icon color:#dc2626 */}
               <div className="lift-btn-wrapper">
-                <button
-                  className="lift-btn up"
-                  onClick={() => publish("parking/web/repair/lift", "up")}
-                >
-                  ▲
-                </button>
-                <button
-                  className="lift-btn down"
-                  onClick={() => publish("parking/web/repair/lift", "down")}
-                >
-                  ▼
-                </button>
+                <h3>{angleValue === null ? "0" : angleValue} 도</h3>
               </div>
             </div>
           </div>
@@ -407,7 +364,7 @@ const RepairSection = () => {
       {showReportModal && (
         <RepairReportModal
           onClose={() => setShowReportModal(false)}
-          data={workingCar}
+          data={workingCar[0]}
           refreshStockList={refreshStockList}
         />
       )}

@@ -27,7 +27,7 @@ public class ReportResponseDTO {
         this.repairAmount = entity.getRepairAmount();
 
         if (entity.getUserCar() != null && entity.getUserCar().getCar() != null) {
-            this.userCarId = Long.bitCount(entity.getUserCar().getId());
+            this.userCarId = entity.getUserCar().getId().intValue();
             this.carNumber = entity.getUserCar().getCar().getCarNumber();
         }
     }

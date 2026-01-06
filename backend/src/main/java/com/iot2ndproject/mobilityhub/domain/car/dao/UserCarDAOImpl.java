@@ -13,8 +13,9 @@ public class UserCarDAOImpl implements UserCarDAO{
     private final UserCarRepository userCarRepository;
 
     @Override
-    public UserCarEntity findById(long id) {
-        return userCarRepository.findById(id);
+    public UserCarEntity findById(int id) {
+
+        return userCarRepository.findById((long)id);
     }
 
     @Override

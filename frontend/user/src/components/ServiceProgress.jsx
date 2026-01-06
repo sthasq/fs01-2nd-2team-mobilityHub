@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { submitServiceRequest, fetchLatestServiceRequest, callVehicle } from "../api/serviceApi";
+import UserHeader from "./UserHeader";
 
 export function ServiceProgress({ isLogin }) {
   const navigate = useNavigate();
@@ -121,15 +122,13 @@ export function ServiceProgress({ isLogin }) {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb", padding: "16px" }}>
       {/* 헤더 */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-        <button onClick={handleBack} style={{ padding: "4px 8px" }}>
-          &lt; 뒤로
-        </button>
-        <div>
-          <div style={{ fontSize: "12px", color: "#6b7280" }}>선택된 차량</div>
-          <div>{selectedVehicle}</div>
-        </div>
-      </div>
+      <UserHeader
+        variant="simple"
+        label="선택된 차량"
+        value={selectedVehicle}
+        onBack={handleBack}
+        backText="< 뒤로"
+      />
 
       {/* 서비스 선택 */}
       <h2 style={{ color: "#374151", marginBottom: "8px" }}>이용할 서비스 선택</h2>
