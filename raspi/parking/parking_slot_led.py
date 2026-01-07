@@ -4,13 +4,13 @@ import paho.mqtt.client as mqtt
 
 # Slot mapping: (node_id, LED_PIN)
 SLOTS = [
-    (5, 24),  # P01
-    (7, 25),  # P02
-    (9, 12),  # P03
+    (5, 6),  # P01
+    (7, 23),  # P02
+    (9, 27),  # P03
 ]
 
 # MQTT config
-MQTT_BROKER = "192.168.14.56"
+MQTT_BROKER = "192.168.14.73"
 MQTT_PORT = 1883
 MQTT_TOPIC = "rccar/+/position"
 MQTT_CLIENT_ID = "parking_slot_led_multi"
@@ -68,6 +68,7 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
+    print("브로커 연결 시작하기")
     car_id = parse_car_id(msg.topic)
     if not car_id:
         return
@@ -88,18 +89,18 @@ def setup_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    print("브로커 연결")
     return client
-
-
 
 
 if __name__ == "__main__":
     setup_gpio()
     client = setup_mqtt()
     try:
+        print("브로커 연결 시작하기")
         client.loop_forever()
-    except KeyboardInterrupt:
-        pass
+    except Exception as e:
+        print(e)
     finally:
         client.disconnect()
         for _, pin in SLOTS:
