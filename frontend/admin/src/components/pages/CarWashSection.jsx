@@ -32,7 +32,7 @@ const CarWashSection = () => {
   // 페이지 로딩 시 카메라 스트리밍 시작
   useEffect(() => {
     if (connectStatus === "connected") {
-      publish("parking/web/carwash/cam", "start");
+      publish("parking/web/carwash/cam/control", "start");
     }
   }, [connectStatus, publish]);
 

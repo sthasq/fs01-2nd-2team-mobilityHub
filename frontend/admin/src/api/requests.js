@@ -9,7 +9,6 @@ const request = {
   // 메인
   workList: "/entrance/work/list",
   todayWork: "/entrance/work/today",
-  workInfoTotalList: "/entrance/work/totalList",
 
   // 입출구
   todayEntry: "/entrance/today/entry",

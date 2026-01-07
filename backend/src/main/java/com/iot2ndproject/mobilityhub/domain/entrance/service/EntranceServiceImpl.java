@@ -198,10 +198,9 @@ public class EntranceServiceImpl implements EntranceService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<WorkInfoTotalListResponse> workInfoTotalList() {
-        return List.of();
-    }
+
+
+
 
     // 번호판 수정
     @Override

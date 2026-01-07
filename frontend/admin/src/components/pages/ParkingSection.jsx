@@ -3,11 +3,11 @@ import { Car, CheckCircle, XCircle } from "lucide-react";
 
 import "../style/ParkingSection.css"; // CSS 분리
 import "../../App.css";
-import { workInfoTotalList } from "../../api/workInfoAPI";
 import useMqtt from "../hook/useMqtt";
+import { getParkingList } from "../../api/parkingAPI";
 
 export default function ParkingSection() {
-  const [workTotalList, setWorkTotalList] = useState([]);
+  const [parkingList, setparkingList] = useState([]);
   const { connectStatus, imageSrc, publish } = useMqtt();
 
   useEffect(() => {
@@ -15,9 +15,9 @@ export default function ParkingSection() {
       publish("parking/web/parking/cam/control", "start");
     }
 
-    workInfoTotalList()
+    getParkingList()
       .then((res) => {
-        setWorkTotalList(res);
+        setparkingList(res);
       })
       .catch((err) => console.error("조회실패: ", err));
 
@@ -26,38 +26,29 @@ export default function ParkingSection() {
     };
   }, [connectStatus, publish]);
 
-  // console.log(workTotalList);
+  // 주차 판단 로직
+  // P로 시작하는 주차 구역만
+  const parkingOnly = parkingList.filter((p) => p.sectorId && p.sectorId.startsWith("P"));
 
-  const sectors = ["P01", "P02", "P03"];
-  const carStateToSector = {
-    5: "P01",
-    7: "P02",
-    9: "P03",
-  };
-
-  // 출차시간이 없으면 carstate값이 5, 7, 9(주차장 칸 번호)가 있는 차량 수
-  const activeVehicles = workTotalList.filter(
-    (v) => !v.exit_time && [5, 7, 9].includes(Number(v.carState))
-  );
-
-  // 갯수 확인
-  const countParking = activeVehicles.length;
-
-  // console.log(countParking);
-
-  // 화면용 parkingSpots 생성
-  const parkingSpots = sectors.map((sector) => {
-    // 이 구역에 맞는 차량 찾기
-    const vehicle = activeVehicles.find((v) => carStateToSector[Number(v.carState)] === sector);
+  // 사용 중 판단
+  const parkingSpots = parkingOnly.map((p) => {
+    const isOccupied = p.carNumber !== null && p.entryTime !== null && p.exitTime === null;
 
     return {
-      id: sector,
-      spotNumber: sector,
-      status: vehicle ? "사용중" : "사용가능",
-      plateNumber: vehicle ? vehicle.carNumber : null,
-      parkedSince: vehicle ? vehicle.entry_time : null,
+      id: p.sectorId,
+      soptNumber: p.sectorId,
+      status: isOccupied ? "사용중" : "사용가능",
+      plateNumber: p.carNumber,
+      parkedSince: p.entryTime,
     };
   });
+
+  // 주차 구역 기준 통계 계산
+  const totalCount = parkingSpots.length;
+  const usedCount = parkingSpots.filter((p) => p.status === "사용중").length;
+
+  const availableCount = totalCount - usedCount;
+  const occupancyRate = totalCount === 0 ? 0 : Math.round((usedCount / totalCount) * 100);
 
   return (
     <div className="page">
@@ -79,7 +70,7 @@ export default function ParkingSection() {
           <div className="card-item">
             <div>
               <p className="text">사용중</p>
-              <p className="stat-value text-red">{countParking} 대</p>
+              <p className="stat-value text-red">{usedCount} 대</p>
             </div>
             <div className="stat-icon bg-red">
               <XCircle />
@@ -91,7 +82,7 @@ export default function ParkingSection() {
           <div className="card-item">
             <div>
               <p className="text">사용가능</p>
-              <p className="stat-value text-green">{sectors.length - countParking} 면</p>
+              <p className="stat-value text-green">{availableCount} 면</p>
             </div>
             <div className="stat-icon bg-green">
               <CheckCircle />
@@ -103,9 +94,7 @@ export default function ParkingSection() {
           <div className="card-item">
             <div>
               <p className="text">점유율</p>
-              <p className="stat-value text-blue">
-                {Math.round((countParking / sectors.length) * 100)} %
-              </p>
+              <p className="stat-value text-blue">{occupancyRate} %</p>
             </div>
             <div className="stat-icon bg-blue">
               <Car />

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import mqtt from "mqtt";
 
 // MQTT 브로커 주소 : 모든 페이지에서 동일하게 사용
-const BROKER_URL = "ws://192.168.14.69:9001";
+const BROKER_URL = "ws://192.168.14.73:9001";
 
 const useMqtt = () => {
   const [connectStatus, setConnectStatus] = useState("connecting");
@@ -53,9 +53,9 @@ const useMqtt = () => {
 
       // 실시간 CCTV
       if (
-        topic === "parking/web/carwash/cam" ||
+        topic === "parking/web/carwash/cam/frame" ||
         topic === "parking/web/repair/cam/frame" ||
-        topic === "parking/web/entrance/cam" ||
+        topic === "parking/web/entrance/cam/frame" ||
         topic === "parking/web/parking/cam/frame"
       ) {
         setImageState(`data:image/jpeg;base64,${payload}`);
@@ -93,9 +93,9 @@ const useMqtt = () => {
     // cleanup
     return () => {
       if (mqttClient) {
-        mqttClient.publish("parking/web/carwash/cam", "stop");
+        mqttClient.publish("parking/web/carwash/cam/control", "stop");
         mqttClient.publish("parking/web/repair/cam/control", "stop");
-        mqttClient.publish("parking/web/entrance/cam", "stop");
+        mqttClient.publish("parking/web/entrance/cam/control", "stop");
         mqttClient.publish("parking/web/parking/cam/control", "stop");
 
         mqttClient.end();
