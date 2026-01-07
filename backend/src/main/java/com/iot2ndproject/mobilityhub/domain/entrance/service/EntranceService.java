@@ -23,8 +23,6 @@ public interface EntranceService {
     List<WorkInfoResponseDTO> findAll();
     List<WorkInfoResponseDTO> findAllToday();
 
-    List<WorkInfoTotalListResponse> workInfoTotalList();
-
     // 번호판 수정
     void updatePlateNumber(Long workInfoId, String newCarNumber);
 }

@@ -36,14 +36,5 @@ public class ParkingDAOImpl implements ParkingDAO {
         return parkingRepository.findAll();
     }
 
-    // ✅ DTO 변환 메서드 추가
-    public List<ParkingDTO> findAllDto() {
-        return parkingRepository.findAll().stream()
-                .map(entity -> ParkingDTO.builder()
-                        .sectorId(entity.getSectorId())
-                        .sectorName(entity.getSectorName())
-                        .state(entity.getState())
-                        .build())
-                .collect(Collectors.toList());
-    }
+
 }

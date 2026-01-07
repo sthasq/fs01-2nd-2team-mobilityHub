@@ -22,8 +22,6 @@ const MainSection = () => {
   // 작업 목록 가져오기
   const [workList, setWorkList] = useState([]);
 
-  const [workTotalList, setWorkTotalList] = useState([]);
-
   // 주차 현황 가져오기
   const [parkingSpace, setParkingSpace] = useState([]);
 
@@ -76,50 +74,34 @@ const MainSection = () => {
     });
   };
 
-  console.log("정보", parkingSpace);
-  console.log("주차장: ", workTotalList);
-
-  const sectors = ["P01", "P02", "P03"];
-  const carStateToSector = {
-    5: "P01",
-    7: "P02",
-    9: "P03",
-  };
-
-  // 출차시간이 없으면 carstate값이 5, 7, 9(주차장 칸 번호)가 있는 차량 수
-  const activeVehicles = workTotalList.filter(
-    (v) => !v.exit_time && [5, 7, 9].includes(Number(v.carState))
-  );
-
-  // 갯수 확인
-  const countParking = activeVehicles.length;
-
   useEffect(() => {
-    // 입출차 차트
     inOutChartData();
 
-    workInfoTotalList()
-      .then((res) => {
-        setWorkTotalList(res);
-      })
-      .catch((err) => console.error("조회실패: ", err));
-
-    // 구역별 이용 차트 데이터
+    // 서비스별 이용 현황
     getTodayWorkList()
-      .then((res) => {
-        setWorkList(res);
-      })
-      .catch((err) => console.log("작업 목록 가져오기 실패: ", err));
-  }, []);
+      .then((res) => setWorkList(res))
+      .catch((err) => console.error("작업 목록 조회 실패:", err));
 
-  useEffect(() => {
+    // 주차장 현황
     getParkingList()
       .then((res) => {
+        console.log("주차 데이터:", res);
         setParkingSpace(res);
       })
-      .catch((err) => console.err("주차장 정보 조회실패: ", err));
+      .catch((err) => console.error("주차장 조회 실패:", err));
   }, []);
 
+  // 주차 로직
+  // P로 시작하는 구역만 주차 구역 판단
+  const parkingOnly = parkingSpace.filter((p) => p.sectorId && p.sectorId.startsWith("P"));
+
+  // 현재 주차 중인 차량
+  const activeParking = parkingOnly.filter(
+    (p) => p.carNumber !== null && p.entryTime !== null && p.exitTime === null
+  );
+
+  // 주차 중인 차량 수
+  const countParking = activeParking.length;
   return (
     <div className="main-page">
       {/* 통계 차트 영역 */}
@@ -159,30 +141,18 @@ const MainSection = () => {
                 </tr>
               </thead>
               <tbody>
-                {sectors.map((sector) => {
-                  // 해당 구역에 있는, 출차시간이 없는 차량 찾기
-                  const vehicle = workTotalList.find(
-                    (v) =>
-                      Number(v.carState) ===
-                        Number(
-                          Object.keys(carStateToSector).find(
-                            (k) => carStateToSector[k] === sector
-                          )
-                        ) && !v.exit_time // exit_time이 없는 데이터만
-                  );
+                {parkingOnly.map((p) => {
+                  const isOccupied =
+                    p.carNumber !== null && p.entryTime !== null && p.exitTime === null;
 
                   return (
-                    <tr key={sector}>
+                    <tr key={p.sectorId}>
                       <td className="car-number">
                         <Car className="w-5 h-5 text-gray-400" />
-                        <span>{vehicle ? vehicle.carNumber : "비어있음"}</span>
+                        <span>{isOccupied ? p.carNumber : "비어있음"}</span>
                       </td>
-                      <td>{sector}</td>
-                      <td>
-                        {vehicle
-                          ? vehicle.entry_time || "-"
-                          : "사용중인 차량이 없습니다"}
-                      </td>
+                      <td>{p.sectorId}</td>
+                      <td>{isOccupied ? p.entryTime : "사용중인 차량이 없습니다"}</td>
                     </tr>
                   );
                 })}
@@ -191,7 +161,6 @@ const MainSection = () => {
           </div>
         </div>
 
-        {/* 날씨 관련 시스템 */}
         <div className="weather-info">
           {/* 날짜와 날씨 */}
           <div>
@@ -199,7 +168,7 @@ const MainSection = () => {
             <p id="day">{currentDate}</p>
           </div>
 
-          {/* 물 수위 센서 */}
+          {/* 달력 */}
           <div className="calendar">
             <MiniCalendar style={{ textAlign: "center", margin: "0 auto" }} />
           </div>

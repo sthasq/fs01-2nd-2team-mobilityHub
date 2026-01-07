@@ -53,10 +53,6 @@ public class EntranceController {
         return entranceService.findAllToday();
     }
 
-    @GetMapping("/work/totalList")
-    public List<WorkInfoTotalListResponse> workInfoTotalList() {
-        return entranceService.workInfoTotalList();
-    }
 
     // 금일 입차
     @GetMapping("/today/entry")
