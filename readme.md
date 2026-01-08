@@ -32,10 +32,10 @@
 
 | 이름 | 역할 및 주담당 업무 | 개인 Git |
 | --- | --- | --- |
-| **노건우** | ERD 설계, 정비 상세/정비 파트 Backend 및 Frontend 중심 | [geonwoo1226](https://github.com/geonwoo1226) |
+| **천경신** | 팀장 / RC카 및 User Web, Backend RC카 경로/상태 관리 | [sthasq](https://github.com/sthasq) |
+| **노건우** | ERD 설계, 정비 파트 Backend 및 Frontend 구현 , Spring Security + JWT 적용 관리자 로그인 기능 구현 | [geonwoo1226](https://github.com/geonwoo1226) |
 | **이다온** | User/Admin 페이지 설계, Admin Web UI/대시보드, 세차/정비/통계 | [DaOn1072](https://github.com/DaOn1072) |
 | **이희원** | 출입구(게이트/카메라), Backend 일부, Admin Web 보완| [heewonn09](https://github.com/heewonn09) |
-| **천경신** | RC카 및 User Web, Backend RC카 경로/상태 관리| [sthasq](https://github.com/sthasq) |
 
 
 ---
