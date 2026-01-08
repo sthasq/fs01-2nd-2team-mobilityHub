@@ -7,6 +7,7 @@ import json
 
 from threading import Thread
 
+# MQTT 작업자 클래스
 class MqttWorker:
     # 생성자에서 mqtt통신할 수 있는 객체생성, 필요한 다양한 객체생성, 콜백함수등록
     def __init__(self):
@@ -14,8 +15,7 @@ class MqttWorker:
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
-        
-        # self.dht11.start()   # 스레드 실행
+        # 스레드 실행
         self.camera = MyCamera() 
         # 스트리밍의 상태를 제어하기 위해서 변수 
         self.is_streaming = False 
@@ -39,11 +39,12 @@ class MqttWorker:
                 self.is_streaming = False 
                 break
             
-            
+    # 서보모터 각도를 퍼블리시하는 메소드
     def publish_servo_angle(self, angle):
         if angle == self.prev_angle:
             return 
         
+        # 서보모터 각도 퍼블리시
         topic = "parking/web/repair/lift/angle"
         payload = json.dumps({
             "angle": angle
@@ -71,12 +72,14 @@ class MqttWorker:
 
         # 세차장과 정비소 카메라 작동
         if message.topic == "parking/web/repair/cam/control":
+            # 카메라 제어 메시지 처리
             if myval == "start":
                 print(message.topic, myval)
                 if not self.is_streaming:
                     self.is_streaming = True
                     Thread(target=self.send_camera_frame, daemon=True).start()
                     
+            # 카메라 정지
             elif myval == "stop":
                 print(message.topic, myval)
                 self.is_streaming = False

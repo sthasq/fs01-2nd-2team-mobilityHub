@@ -32,10 +32,10 @@
 
 | 이름 | 역할 및 주담당 업무 | 개인 Git |
 | --- | --- | --- |
-| **노건우** | ERD 설계, 정비 상세/정비 파트 Backend 및 Frontend 중심 | [geonwoo1226](https://github.com/geonwoo1226) |
+| **천경신** | 팀장 / RC카 및 User Web, Backend RC카 경로/상태 관리 | [sthasq](https://github.com/sthasq) |
+| **노건우** | ERD 설계, 정비 파트 Backend 및 Frontend 구현 , Spring Security + JWT 적용 관리자 로그인 기능 구현 | [geonwoo1226](https://github.com/geonwoo1226) |
 | **이다온** | User/Admin 페이지 설계, Admin Web UI/대시보드, 세차/정비/통계 | [DaOn1072](https://github.com/DaOn1072) |
 | **이희원** | 출입구(게이트/카메라), Backend 일부, Admin Web 보완| [heewonn09](https://github.com/heewonn09) |
-| **천경신** | RC카 및 User Web, Backend RC카 경로/상태 관리| [sthasq](https://github.com/sthasq) |
 
 
 ---
@@ -147,10 +147,15 @@
 | `rccar/{carId}/service` | 서비스 완료 + 다음 경로 전달 |
 | `rccar/{carId}/call` | 출구 호출 경로 전달 |
 | `rccar/{carId}/position` | RC카 위치 보고 |
-| `parking/web/entrance/*` | 입구 카메라/차단기 제어 |
-| `parking/web/carwash/*` | 세차 카메라/펌프 제어 |
-| `parking/web/repair/*` | 정비 카메라/리프트 제어 |
-| `parking/web/parking/*` | 주차 카메라 제어 |
+| `parking/web/entrance/control` | 입구 카메라/차단기 제어 |
+| `parking/web/carwash/control` | 세차 카메라/펌프 제어 |
+| `parking/web/repair/control` | 정비 카메라/리프트 제어 |
+| `parking/web/parking/control` | 주차 카메라 제어 |
+| `parking/web/repair/lift/angle` | 정비 카메라/리프트 제어 |
+| `parking/web/entrance/frame` | 입구 카메라 영상 송신 이미지 |
+| `parking/web/carwash/frame` | 세차 카메라 영상 송신 이미지 |
+| `parking/web/repair/frame` | 정비 카메라 영상 송신 이미지 |
+| `parking/web/parking/frame` | 주차 카메라 영상 송신 이미지 |
 
 6. Raspberry Pi (Python)
 

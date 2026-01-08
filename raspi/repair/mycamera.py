@@ -6,17 +6,9 @@ from picamera2 import Picamera2
 
 class MyCamera:
     frame = None 
-    thread = None 
-    def getStreaming(self):
-        if MyCamera.thread is None:
-            MyCamera.thread = threading.Thread(target=self.streaming)
-            MyCamera.thread.start() 
-            
-            while MyCamera.frame is None:
-                time.sleep(0.01) 
-                
-        return MyCamera.frame
+    thread = None
     
+    # 스트리밍 작업
     @classmethod 
     def streaming(cls):
 
@@ -33,11 +25,10 @@ class MyCamera:
         
         time.sleep(1)
         
-        # 메모리에 임시공간을 만들고 프레임을 저장하고 작업 초당 20장씩 쓰고 읽고를 SD카드에서 작업하면 느리다.
+        # 사진촬영용 임시공간 생성
         stream = io.BytesIO()
-        # 2. 지속적으로 카메라로 촬영된 사진을 변환하기 
-        #    카메라 촬영하는 장면을 한 프레임씩 캡쳐해서 jpeg로 압축하고 메모리공간의 임시저장소에 저장
-        #    1초에 20프레임을 만들어낼 수 있도록 작업 
+        
+        # 무한루프 - 사진촬영 -> 메모리에 저장 -> base64인코딩 -> cls.frame에 저장 
         try:
             while True:    
                 # 사진을 찍어서 임시공간에 저장
@@ -58,3 +49,15 @@ class MyCamera:
         except Exception as e:
             #print(f"카메라 스트리밍오류..{e}")
             device.stop()
+            
+    
+    # 스트리밍 시작
+    def getStreaming(self):
+        if MyCamera.thread is None:
+            MyCamera.thread = threading.Thread(target=self.streaming)
+            MyCamera.thread.start() 
+            
+            while MyCamera.frame is None:
+                time.sleep(0.01) 
+                
+        return MyCamera.frame
