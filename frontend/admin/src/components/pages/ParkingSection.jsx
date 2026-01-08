@@ -54,17 +54,6 @@ export default function ParkingSection() {
     <div className="page">
       {/* 통계 카드 */}
       <div className="status-card">
-        {/* <div className="status-component">
-          <div className="card-item">
-            <div>
-              <p className="text">전체 주차면</p>
-              <p className="count">{sectors.length}</p>
-            </div>
-            <div className="stat-icon bg-gray">
-              <Car />
-            </div>
-          </div>
-        </div> */}
 
         <div className="status-component">
           <div className="card-item">
@@ -115,35 +104,33 @@ export default function ParkingSection() {
         </div>
 
         {/* 주차 공간 리스트 */}
-        <div className="p-4 space-y-3">
+        <div className="parking-list">
           {parkingSpots.map((spot) => (
             <div
               key={spot.id}
-              className={`p-4 rounded-lg border-2 ${
+              className={`parking-card ${
                 spot.status === "사용가능"
-                  ? "border-green-500 bg-green-50"
-                  : "border-red-500 bg-red-50"
+                  ? "parking-available"
+                  : "parking-occupied"
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
+              <div className="parking-header">
+                <div className="parking-title">
                   <Car
-                    className={`w-5 h-5 ${
-                      spot.status === "사용가능" ? "text-green-600" : "text-red-600"
-                    }`}
+                    className={
+                      spot.status === "사용가능" ? "text-green-600 w-5 h-5" : "text-red-600 w-5 h-5"
+                    }
                   />
-                  <span
-                    className={`${spot.status === "사용가능" ? "text-green-900" : "text-red-900"}`}
-                  >
-                    {spot.spotNumber}번 주차면
+                  <span>
+                    {spot.soptNumber}번 주차면
                   </span>
                 </div>
 
                 <span
-                  className={`px-2 py-1 rounded-full text-xs ${
+                  className={`status-badge ${
                     spot.status === "사용가능"
-                      ? "bg-green-200 text-green-800"
-                      : "bg-red-200 text-red-800"
+                      ? "badge-available"
+                      : "badge-occupied"
                   }`}
                 >
                   {spot.status}
@@ -151,20 +138,20 @@ export default function ParkingSection() {
               </div>
 
               {spot.status === "사용중" && (
-                <div className="space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-red-700">차량번호</span>
-                    <span className="text-red-900">{spot.plateNumber}</span>
+                <div className="parking-info">
+                  <div className="parking-info-row">
+                    <span>차량번호</span>
+                    <span>{spot.plateNumber}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-red-700">주차 시작</span>
-                    <span className="text-red-900">{spot.parkedSince}</span>
+                  <div className="parking-info-row">
+                    <span>주차 시작</span>
+                    <span>{spot.parkedSince}</span>
                   </div>
                 </div>
               )}
 
               {spot.status === "사용가능" && (
-                <p className="text-center text-green-700 text-sm">주차 가능</p>
+                <p className="parking-ok">주차 가능</p>
               )}
             </div>
           ))}
