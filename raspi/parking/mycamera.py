@@ -6,17 +6,9 @@ from picamera2 import Picamera2
 
 class MyCamera:
     frame = None 
-    thread = None 
-    def getStreaming(self):
-        if MyCamera.thread is None:
-            MyCamera.thread = threading.Thread(target=self.streaming)
-            MyCamera.thread.start() 
-            
-            while MyCamera.frame is None:
-                time.sleep(0.01) 
-                
-        return MyCamera.frame
+    thread = None
     
+    # 스트리밍 작업
     @classmethod 
     def streaming(cls):
 
@@ -58,3 +50,14 @@ class MyCamera:
         except Exception as e:
             #print(f"카메라 스트리밍오류..{e}")
             device.stop()
+    
+    # 스트리밍 시작
+    def getStreaming(self):
+        if MyCamera.thread is None:
+            MyCamera.thread = threading.Thread(target=self.streaming)
+            MyCamera.thread.start() 
+            
+            while MyCamera.frame is None:
+                time.sleep(0.01) 
+                
+        return MyCamera.frame

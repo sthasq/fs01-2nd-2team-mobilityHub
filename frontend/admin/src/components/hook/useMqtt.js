@@ -1,14 +1,15 @@
-const TOPIC_NAME = "parking/web/#"; // 토픽명
-
 import { useCallback, useEffect, useState } from "react";
+
+// MQTT 라이브러리
 import mqtt from "mqtt";
 
 // MQTT 브로커 주소 : 모든 페이지에서 동일하게 사용
 const BROKER_URL = "ws://192.168.14.69:9001";
 
+// MQTT 훅
 const useMqtt = () => {
-  const [connectStatus, setConnectStatus] = useState("connecting");
-  const [client, setClient] = useState(null);
+  const [connectStatus, setConnectStatus] = useState("connecting"); // 연결상태
+  const [client, setClient] = useState(null); // MQTT 클라이언트
 
   // 실시간 CCTV 스트리밍 이미지
   const [imageSrc, setImageState] = useState("");
@@ -17,11 +18,12 @@ const useMqtt = () => {
   const [capturedImage, setCapturedImage] = useState("");
 
   // YOLO 번호판 박스 좌표
-  const [yoloBox, setYoloBox] = useState(null);
+  const [yoloBox] = useState(null);
 
   // 리프트 각도
   const [angleValue, setAngleValue] = useState(null);
 
+  // MQTT 연결 및 이벤트 처리
   useEffect(() => {
     // 브로커 연결
     const mqttClient = mqtt.connect(BROKER_URL, {
@@ -35,16 +37,7 @@ const useMqtt = () => {
 
     // 연결 성공
     mqttClient.on("connect", () => {
-      console.log("연결성공............");
       setConnectStatus("connected");
-
-      mqttClient.subscribe(TOPIC_NAME, (err) => {
-        if (!err) {
-          console.log(`구독신청 ${TOPIC_NAME}`);
-        } else {
-          console.error("구독신청오류", err);
-        }
-      });
     });
 
     // 메시지 수신
@@ -64,7 +57,6 @@ const useMqtt = () => {
 
       // 캡처 이미지
       if (topic === "parking/web/entrance/capture") {
-        console.log("캡처 이미지 수신");
         setCapturedImage(`data:image/jpeg;base64,${payload}`);
         return;
       }
@@ -74,8 +66,6 @@ const useMqtt = () => {
         try {
           const data = JSON.parse(payload);
           setAngleValue(data.angle);
-
-          console.log("각도 데이터:", data);
         } catch (e) {
           console.error("센서 JSON 파싱 오류", e);
         }
@@ -84,13 +74,12 @@ const useMqtt = () => {
 
     // 에러 처리
     mqttClient.on("error", (err) => {
-      console.log("Connection오류: ", err);
       mqttClient.end();
     });
 
     setClient(mqttClient);
 
-    // cleanup
+    // 페이지 이탈 시 모든 카메라 정리
     return () => {
       if (mqttClient) {
         mqttClient.publish("parking/web/carwash/cam/control", "stop");
@@ -100,7 +89,6 @@ const useMqtt = () => {
 
         mqttClient.end();
         setConnectStatus("connecting");
-        console.log("MQTT연결종료");
       }
     };
   }, []);
@@ -118,12 +106,12 @@ const useMqtt = () => {
   );
 
   return {
-    connectStatus,
+    connectStatus, // 연결상태
     imageSrc, // 실시간 CCTV
     capturedImage, // 캡처 이미지
-    yoloBox,
-    angleValue,
-    publish,
+    yoloBox, // YOLO 번호판 박스
+    angleValue, // 리프트 각도
+    publish, // publish 함수
   };
 };
 

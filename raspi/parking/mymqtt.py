@@ -6,6 +6,7 @@ import paho.mqtt.publish as publisher
 
 from threading import Thread
 
+# MQTT 작업자 클래스
 class MqttWorker:
     # 생성자에서 mqtt통신할 수 있는 객체생성, 필요한 다양한 객체생성, 콜백함수등록
     def __init__(self):
@@ -25,7 +26,7 @@ class MqttWorker:
         while self.is_streaming:
             try:
                 frame = self.camera.getStreaming()
-                publisher.single("parking/web/parking/cam/frame", frame, hostname="192.168.14.73")
+                publisher.single("parking/web/parking/cam/frame", frame, hostname="192.168.14.69")
                 
                 
             except Exception as e:
@@ -48,16 +49,21 @@ class MqttWorker:
     def on_message(self, client, userdata, message):
         myval = message.payload.decode("utf-8")
 
+        # 주차장 cctv 제어
         if message.topic == "parking/web/parking/cam/control":
+            # 시작 명령 처리
             if myval == "start":
                 print(message.topic, myval)
                 if not self.is_streaming:
                     self.is_streaming = True
                     Thread(target=self.send_camera_frame, daemon=True).start()
+                    
+            # 정지 명령 처리
             elif myval == "stop":
                 print(message.topic, myval)
                 self.is_streaming = False
-            
+        
+        # rccar 제어
         elif message.topic == "parking/rccar":
             value = myval.split(":")
             if value[1] == "on":
@@ -71,7 +77,7 @@ class MqttWorker:
     def mymqtt_connect(self):
         try:
             print("브로커 연결 시작하기")
-            self.client.connect("192.168.14.73", 1883, 60)
+            self.client.connect("192.168.14.69", 1883, 60)
 
             mymqtt_obj = Thread(target=self.client.loop_forever)
             mymqtt_obj.start()
