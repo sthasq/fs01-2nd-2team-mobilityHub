@@ -19,6 +19,7 @@
 | **팀명** | 2차 프로젝트 2팀 MobilityHub |
 | **프로젝트명** | 스마트 주차장(모빌리티 허브) |
 | **목표** | RC카 라인트레이싱 기반 자동 이동 + IoT 장치 제어 + 웹 시스템 연동 프로토타입 구현 |
+|**핵심 키워드**: MQTT, RC카, IoT 제어, Spring Security, JWT, React|
 | **주요성과** | 웹 서비스 요청 → RC카 경로 전달 → 구역 상태 갱신, MQTT 기반 카메라/게이트/펌프/리프트 제어 |
 | **기간** | (프로젝트 일정표 기준) |
 | **사용 장치/센서** | 라인트레이싱 센서, 초음파 센서, 서보모터(게이트/리프트), Pi 카메라, 워터펌프, LED |
@@ -33,7 +34,7 @@
 | 이름 | 역할 및 담당 업무 | 개인 Git |
 | --- | --- | --- |
 | **천경신** | **팀장**<br>RC카 및 Backend RC카 경로/상태 관리<br>Spring Security + JWT 적용 사용자 로그인을 포함한 User Web 기능 구현 | [sthasq](https://github.com/sthasq) |
-| **노건우** | 관리자 로그인 기능 구현 (Spring Security + JWT 기반 인증/인가)<br>정비 파트 Backend 구현 (재고·정비 보고서 CRUD)<br>관리자 정보 조회 및 비밀번호 암호화 처리 (BCrypt 적용)<br>정비 파트 Frontend 구현 (API 연동 및 데이터 전처리)<br>MQTT 기반 다중 카메라 실시간 연동 및 연결 관리 | [geonwoo1226](https://github.com/geonwoo1226) |
+| **노건우** | 관리자 인증/인가 시스템 구현 (Spring Security + JWT)<br>정비 파트 Backend 개발 (재고·정비요청·리포트 CRUD)<br>관리자 계정 관리 및 비밀번호 암호화 처리 (BCrypt)<br>정비 파트 Frontend 개발 (API 연동 및 데이터 전처리)<br>MQTT 기반 다중 카메라 실시간 스트리밍 및 연결 관리 | [geonwoo1226](https://github.com/geonwoo1226) |
 | **이다온** | User/Admin 페이지 설계, Admin Web UI/대시보드, 세차/정비/통계 | [DaOn1072](https://github.com/DaOn1072) |
 | **이희원** | 출입구(게이트/카메라), Backend 일부, Admin Web 보완| [heewonn09](https://github.com/heewonn09) |
 
@@ -153,10 +154,10 @@
 | `parking/web/repair/control` | 정비 카메라/리프트 제어 |
 | `parking/web/parking/control` | 주차 카메라 제어 |
 | `parking/web/repair/lift/angle` | 정비 카메라/리프트 제어 |
-| `parking/web/entrance/frame` | 입구 카메라 영상 송신 이미지 |
-| `parking/web/carwash/frame` | 세차 카메라 영상 송신 이미지 |
-| `parking/web/repair/frame` | 정비 카메라 영상 송신 이미지 |
-| `parking/web/parking/frame` | 주차 카메라 영상 송신 이미지 |
+| `parking/web/entrance/frame` | 입구 카메라 영상수신 토픽 |
+| `parking/web/carwash/frame` | 세차 카메라 영상수신 토픽 |
+| `parking/web/repair/frame` | 정비 카메라 영상수신 토픽 |
+| `parking/web/parking/frame` | 주차 카메라 영상수신 토픽 |
 
 6. Raspberry Pi (Python)
 
@@ -171,7 +172,7 @@
 | --- | --- |
 | RC카 라인트레이서 | 노드 이동/위치 보고 |
 | 게이트 서보 + 초음파 | 입출구 차단기 개방/닫힘, 차량 감지 |
-| 카메라 | 입구/세차/정비/주차 영상 송신 |
+| 카메라 | 입구/세차/정비/주차 영상 송수신 |
 | 펌프 | 세차 동작 제어 |
 | 리프트 | 정비 리프트 각도 제어 |
 
