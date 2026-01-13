@@ -8,7 +8,7 @@
 
 ## 🎥 1. 프로젝트 시연 영상
 
-- 영상 보기: [(링크)](https://drive.google.com/file/d/10otJiswm6tMUB8uEek3xaiPRln5OaHjk/view?usp=sharing)
+- 영상 보기: [(링크)]([https://drive.google.com/file/d/10otJiswm6tMUB8uEek3xaiPRln5OaHjk/view?usp=sharing](https://youtu.be/FYpmCuPAQjo))
 
 ---
 
